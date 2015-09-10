@@ -1,0 +1,24 @@
+# template condor job description file for running MG5_aMC on condor
+# to be used with submitMG5_dag.py and runMG5_aMC.sh
+
+Executable = runMG5_aMC.sh
+Universe = vanilla
+Output = SEDLOG/mg5.$(cluster).$(process).out
+Error = SEDLOG/mg5.$(cluster).$(process).err
+Log = SEDLOG/mg5.$(cluster).$(process).log
+when_to_transfer_output = ON_EXIT_OR_EVICT
+
+request_cpus = 1
+request_memory = 4GB
+request_disk = 30000000
+
+accounting_group = group_physics.hep
+account_group_user = $ENV(LOGNAME)
+
+getenv = true
+zipdir = $ENV(HOME)/zips
+transfer_input_files = $(zipdir)/MG5_aMC_v2.3.0.tar.gz, $(zipdir)/pythia8209.tgz, SEDCARD
+
+arguments = $(opts)
+
+queue
