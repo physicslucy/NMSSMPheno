@@ -1,0 +1,18 @@
+! Common Pythia8 settings for 13 TeV pp collisions
+! Note, no physics processes are specified here - use another card for that
+! and load both into pythia.
+
+! Generic setup settings
+Random:setSeed = on
+Next:numberShowEvent = 00
+
+Init:showChangedSettings = on      ! list changed settings
+
+! Beam parameter settings. Values below agree with default ones.
+Beams:idA = 2212                   ! first beam, p = 2212, pbar = -2212
+Beams:idB = 2212                   ! second beam, p = 2212, pbar = -2212
+Beams:eCM = 13000
+
+! LHAPDF tune
+! CUETP8M1 tune a la CMS
+Tune:pp = 18

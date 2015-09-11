@@ -1,0 +1,17 @@
+! Contains Pythia8 commands for generating ggh(125)->aa->4b MC
+! Designed to work in conjunction with common_ppX.cmnd,
+! where X is the CoM energy
+
+! gg -> h(125)
+! turn off all decays
+HiggsSM:gg2H = on
+25:m0 = 125.
+25:onMode = off
+
+! h -> a a
+25:addChannel = 1 1 100 36 36
+36:mMin = 3.5
+36:mWidth = 0.1
+
+! a -> b b
+36:addChannel = 1 0.5 100 5 -5
