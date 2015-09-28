@@ -1,3 +1,15 @@
 *.exe
 *.pyc
+*.root
+*.sub
+*.log
+*.err
+*.out
+*.status
+*.dag
+*.condor
+*.metrics
+*.rescue*
+*.hepmc
+
 logs/
