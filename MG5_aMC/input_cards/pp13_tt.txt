@@ -1,0 +1,16 @@
+set automatic_html_opening False
+set pythia8_path /users/ra12451/pythia8209
+generate p p > t t~ [QCD]
+output pp13_tt
+launch
+  set run_card nevents 200
+  set run_card parton_shower PYTHIA8
+  set run_card ebeam1 6500
+  set run_card ebeam2 6500
+  #set run_card ickkw 3
+  #set run_card jetalgo 1
+  #set run_card jetradius 1
+  #set shower_card Qcut 20
+  #set shower_card njmax 2
+  set shower_card extralibs dl
+
