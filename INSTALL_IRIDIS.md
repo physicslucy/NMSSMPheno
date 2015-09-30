@@ -1,5 +1,15 @@
 #Installation instruction for running on Iridis (Southampton)
 
+- [MG5_aMC@NLO (background MC)](#mg5_amcnlo-background-mc)
+- [Pythia8 (signal MC)](#pythia8-signal-mc)
+  - [HepMC](#hepmc)
+  - [BOOST](#boost)
+  - [LHAPDF6](#lhapdf6)
+  - [ROOT](#root)
+  - [Pythia 8](#pythia-8)
+- [Delphes (detector simulation)](#delphes-detector-simulation)
+  - [Random notes](#random-notes)
+
 Load the following modules:
 
 ```
@@ -12,7 +22,7 @@ module load gsl
 module unload intel
 ```
 
-Would also advise adding these automatically when logging in with `module initadd`.
+Would also advise adding these automatically when logging in by using `module initadd <module>`.
 
 Note that we unload the intel module as there are licensing issues that cause havok when compiling.
 
@@ -86,7 +96,7 @@ ldconfig -p | grep -i xpm
 
 Now we can try and compile ROOT, telling it to use the correct compilers (as the Intel ones have expired and CMake doesn't pick up our new modules), the correct Xpm library, and other customisations for ROOT (roofit and minuit fitter):
 
-**Note that Pythia8 needs ROOT5, whilst analysis should preferably use ROOT6. The instructions that fallow are for ROOT5, but the same instructions work for both, changing `root5` to `root6` and the git tag.**
+**Note that Pythia8 and Delphes both require ROOT5, whilst analysis should preferably use ROOT6. The instructions that follow are for ROOT5, but the same instructions work for both, changing `root5` to `root6` and the git tag.**
 
 ```
 git clone http://root.cern.ch/git/root.git root5
@@ -103,8 +113,8 @@ cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=/local/software/gcc/4.9.1/bin/gcc \
 -Droofit:BOOL=ON -Dminuit2:BOOL=ON $PWD/../root5/
 nice -n 19 time cmake --build .
 cmake -DCMAKE_INSTALL_PREFIX=$PWD/../root5_install -P cmake_install.cmake
-# source ../root5_install/bin/thisroot.sh
-# echo "source $PWD/../root5_install/bin/thisroot.sh" >> ~/.bash_profile
+source ../root5_install/bin/thisroot.sh
+echo "source $PWD/../root5_install/bin/thisroot.sh" >> ~/.bash_profile
 ```
 
 Note that building takes a very long time - about 3 hours for ROOT6, and about 1.5 hours for ROOT5.
@@ -152,6 +162,18 @@ CT10nlo PDF set, member #0, version 4; LHAPDF ID = 11000
 ```
 
 - `main91`: test ROOT linked correctly (NB `main92` currently failing, not sure why)
+
+##Delphes (detector simulation)
+
+```
+git clone git@github.com:delphes/delphes.git
+cd delphes
+make -j4
+```
+
+##MadAnalysis (analysis framework)
+
+**TODO**
 
 ###Random notes
 

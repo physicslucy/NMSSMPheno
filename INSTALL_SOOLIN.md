@@ -1,5 +1,9 @@
 #Installation instruction for running on Soolin at Bristol
 
+- [MG5_aMC@NLO (background MC)](#mg5_amcnlo-background-mc)
+- [Pythia8 (signal MC)](#pythia8-signal-mc)
+- [Delphes (detector simulation)](#delphes-detector-simulation)
+- [MadAnalysis (analysis)](#madanalysis-analysis)
 
 ##MG5_aMC@NLO (background MC)
 
@@ -41,6 +45,8 @@ Clone Delphes into home dir:
 
 ```
 git clone git@github.com:delphes/delphes.git
+cd delphes
+make -j4
 ```
 
 ##MadAnalysis (analysis)
