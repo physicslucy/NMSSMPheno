@@ -1,8 +1,5 @@
-#Installation instruction for running on PBS system 
+#Installation instruction for running on Soolin at Bristol
 
-e.g. at Southampton on Iridis
-
-**TODO**
 
 ##MG5_aMC@NLO (background MC)
 

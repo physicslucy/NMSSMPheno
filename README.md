@@ -22,6 +22,7 @@ This system has been designed to run on the 2 batch systems:
 git clone git@github.com:raggleton/NMSSMPheno.git
 ```
 
-- Follow the program installation instructions for the batch system you are using:
-    - HTCondor (Soolin @ Bristol): [INSTALL_CONDOR.md](INSTALL_CONDOR.md)
-    - PBS (Soton / Bluecrystal @ Bristol): [INSTALL_PBS.md](INSTALL_PBS.md)
+- Follow the program installation instructions for the system you are using:
+    - Soolin @ Bristol: [INSTALL_SOOLIN.md](INSTALL_SOOLIN.md)
+    - Iridis @ Soton: [INSTALL_IRIDIS.md](INSTALL_IRIDIS.md)
+
