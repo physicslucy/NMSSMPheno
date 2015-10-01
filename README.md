@@ -10,9 +10,9 @@ Basic overview:
 
 3) Analyse with MadAnlaysis (TODO)
 
-This system has been designed to run on the 2 batch systems:
-- HTCondor system at Bristol (Advice: do it inside of `CMSSW_7_4_4_ROOT5` environment to avoid compiler horror)
-- PBS-based systems, for use at Soton
+This system has been designed to run on various systems:
+- Soolin at Bristol (HTCondor batch system)
+- Iridis at Southampton (PBS batch system)
 
 ##Installation
 
@@ -26,3 +26,4 @@ git clone git@github.com:raggleton/NMSSMPheno.git
     - Soolin @ Bristol: [INSTALL_SOOLIN.md](INSTALL_SOOLIN.md)
     - Iridis @ Soton: [INSTALL_IRIDIS.md](INSTALL_IRIDIS.md)
 
+**TODO**: some automated way of installing and compiling everything.
