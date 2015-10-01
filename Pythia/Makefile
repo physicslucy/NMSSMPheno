@@ -19,7 +19,7 @@ BINDIR = bin
 # -------------------------------------------------
 
 # For IRIDIS:
-ifneq ($(findstring $(shell hostname), cyan), "")
+ifneq ($(findstring cyan, $(shell hostname)), )
 	PYTHIA8DIR = $(HOME)/Pythia8/pythia8212
 	FASTJETDIR = $(HOME)/fastjet-install
 	HEPMCDIR = $(HOME)/HepMC/install
@@ -31,7 +31,7 @@ ifneq ($(findstring $(shell hostname), cyan), "")
 # Currently setup for use on soolin, within CMSSW_7_4_4_ROOT5
 # It took a *LOT* of work to find all the compatible releases/compiler...
 # Change at your own peril!
-else ifneq ($(findstring $(shell hostname), soolin), "")
+else ifneq ($(findstring soolin, $(shell hostname)), )
 	PYTHIA8DIR = $(HOME)/pythia8209
 	FASTJETDIR = $(HOME)/fastjet-install
 	# Don't call it HEPMCDIR beacuse it defaults to /build/degano not cvmsfs within cmssw for some stupid reason
