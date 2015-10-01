@@ -8,7 +8,7 @@
   - [ROOT](#root)
   - [Pythia 8](#pythia-8)
 - [Delphes (detector simulation)](#delphes-detector-simulation)
-  - [Random notes](#random-notes)
+- [Random notes](#random-notes)
 
 Load the following modules:
 
@@ -161,9 +161,11 @@ LHAPDF 6.1.5 loading /home/rca1e13/LHAPDF-6.1.5/../LHAPDF6/share/LHAPDF/CT10nlo/
 CT10nlo PDF set, member #0, version 4; LHAPDF ID = 11000
 ```
 
-- `main91`: test ROOT linked correctly (NB `main92` currently failing, not sure why)
+- `main91`: test ROOT linked correctly
 
 ##Delphes (detector simulation)
+
+Assumes ROOT5 already installed.
 
 ```
 git clone git@github.com:delphes/delphes.git
@@ -175,7 +177,7 @@ make -j4
 
 **TODO**
 
-###Random notes
+##Random notes
 
 ----------------------------------------------------------------------
 Libraries have been installed in:

@@ -5,6 +5,8 @@
 - [Delphes (detector simulation)](#delphes-detector-simulation)
 - [MadAnalysis (analysis)](#madanalysis-analysis)
 
+Big Tip: use CMSSW_7_4_4_ROOT5 environment.
+
 ##MG5_aMC@NLO (background MC)
 
 Download tar into $HOME/zips.
@@ -18,7 +20,7 @@ First install:
 - FastJet
 - LHAPDF6
 
-BOOST and ROOT are also required, but can use central installations instead.
+BOOST and ROOT5 are also required, but can use central installations instead.
 
 Download Py8 tar into $HOME/zips.
 Extract, and test it compiles OK (not actually needed for running jobs).
@@ -39,9 +41,37 @@ to avoid the error message:
 PYTHIA Abort from Pythia::Pythia: unmatched version numbers : in code 8.209 but in XML 8.205
 ```
 
+Test the libraries have compiled fine by compiling & running example programs:
+
+```
+cd examples
+make mainXX
+./mainXX
+```
+
+- `main01`: very basic, no dependencies
+- `main41`: test HepMC linked correctly
+- `main52`: test LHAPDF linked correctly. Note that this example still uses LHAPDF5, so you will need to manually change:
+
+```
+string pdfSet = "LHAPDF5:MRST2001lo.LHgrid";
+\\ change to
+string pdfSet = "LHAPDF6:CT10nlo.LHgrid";
+```
+
+You should see when running:
+
+```
+LHAPDF 6.1.5 loading /users/ra12451/LHAPDF6-install/share/LHAPDF/CT10nlo/CT10nlo_0000.dat
+CT10nlo PDF set, member #0, version 4; LHAPDF ID = 11000
+```
+
+- `main91`: test ROOT linked correctly
+
+
 ##Delphes (detector simulation)
 
-Clone Delphes into home dir:
+Assumes ROOT5 already installed.
 
 ```
 git clone git@github.com:delphes/delphes.git
