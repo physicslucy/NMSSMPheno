@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
         }
 
         // now plot a1 variables, and for its decay products
-        for (int j = 0; j < a1Ind.size(); ++j) {
+        for (unsigned j = 0; j < a1Ind.size(); ++j) {
           a1Momentum.fill(pythia.event[a1Ind[j]].pAbs());
           a1TransverseMomentum.fill(pythia.event[a1Ind[j]].pT());
 

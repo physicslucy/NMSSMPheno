@@ -92,6 +92,11 @@ class PythiaProgramOpts
         exit(1);
       }
 
+      // Check we have an existing input card
+      if (!fs::exists(fs::path(cardName_))) {
+        throw std::runtime_error("Input card \"" + cardName_+ "\" does not exist");
+      }
+
       // make physics input card part of filename
       // fs::path p(cardName_);
       std::string channel = fs::path(cardName_).stem().string();
