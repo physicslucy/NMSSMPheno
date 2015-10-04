@@ -56,8 +56,8 @@ CXX_COMMON = -std=c++11 -pthread -D_USE_XOPEN2K8 -Wall -Wextra -Wshadow -pedanti
 # For pythia 8.2X
 .cc:
 	$(CXX) $@.cc $(PYTHIA8DIR)/$(LIBDIR)/libpythia8.a -o $@.exe \
-	-w -I$(ROOTDIR)/$(INCDIR) \
-	-I$(BOOSTDIR_INC) \
+	-I$(ROOTDIR)/$(INCDIR) \
+	-isystem $(BOOSTDIR_INC) \
 	-I$(HEPMCDIR)/$(INCDIR) \
 	-I$(PYTHIA8DIR)/$(INCDIR) \
 	$(CXX_COMMON) \
