@@ -46,24 +46,22 @@ int main(int argc, char *argv[]) {
 
   // Interface for conversion from Pythia8::Event to HepMC event.
   HepMC::Pythia8ToHepMC ToHepMC;
-  HepMC::IO_GenEvent *ascii_io = nullptr;
+  HepMC::IO_GenEvent ascii_io(opts.filenameHEPMC(), std::ios::out);
   if (opts.writeToHEPMC()) {
-    ascii_io = new HepMC::IO_GenEvent(opts.filenameHEPMC(), std::ios::out);
     cout << "Writing HepMC to " << opts.filenameHEPMC() << endl;
   }
 
   // Create an LHAup object that can access relevant information in pythia for writing to LHE
-  LHAupFromPYTHIA8 * myLHA = nullptr;
+  LHAupFromPYTHIA8 myLHA(&pythia.process, &pythia.info);
   if (opts.writeToLHE()) {
+    // myLHA2.reset();
     cout << "Writing LHE to " << opts.filenameLHE() << endl;
-    // Create an LHAup object that can access relevant information in pythia.
-    myLHA = new LHAupFromPYTHIA8(&pythia.process, &pythia.info);
     // Open a file on which LHEF events should be stored, and write header.
-    myLHA->openLHEF(opts.filenameLHE());
+    myLHA.openLHEF(opts.filenameLHE());
     // Store initialization info in the LHAup object.
-    myLHA->setInit();
+    myLHA.setInit();
     // Write out this initialization info on the file.
-    myLHA->initLHEF();
+    myLHA.initLHEF();
   }
 
   // Text file to write progress - handy for monitoring during jobs
@@ -176,16 +174,16 @@ int main(int argc, char *argv[]) {
     if (opts.writeToHEPMC()) {
       HepMC::GenEvent* hepmcevt = new HepMC::GenEvent(HepMC::Units::GEV, HepMC::Units::MM);
       ToHepMC.fill_next_event(pythia, hepmcevt);
-      *ascii_io << hepmcevt;
+      ascii_io << hepmcevt;
       delete hepmcevt;
     }
 
     if (opts.writeToLHE()) {
       // Store event info in the LHAup object.
-      myLHA->setEvent();
+      myLHA.setEvent();
       // Write out this event info on the file.
       // With optional argument (verbose =) false the file is smaller.
-      myLHA->eventLHEF();
+      myLHA.eventLHEF();
     }
 
   } // end of generating events loop
@@ -218,13 +216,11 @@ int main(int argc, char *argv[]) {
 
   if (opts.writeToLHE()) {
     // Update the cross section info based on Monte Carlo integration during run.
-    myLHA->updateSigma();
+    myLHA.updateSigma();
     // Write endtag. Overwrite initialization info with new cross sections.
-    myLHA->closeLHEF(true);
-    delete myLHA;
+    myLHA.closeLHEF(true);
   }
 
-  delete ascii_io;
 }
 
 
