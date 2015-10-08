@@ -1,11 +1,11 @@
-! Contains Pythia8 commands for generating ggh(125)->aZ->2b+X MC
+! Contains Pythia8 commands for generating ggh(450)->aZ->2b+X MC
 ! Designed to work in conjunction with common_ppX.cmnd,
 ! where X is the CoM energy
 
-! gg -> h(125)
+! gg -> h
 ! turn off all decays
 HiggsSM:gg2H = on
-25:m0 = 125.
+25:m0 = 450.
 25:onMode = off
 
 ! h -> Z a
