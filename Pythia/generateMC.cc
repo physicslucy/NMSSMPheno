@@ -2,12 +2,11 @@
 #include <fstream>
 #include <string>
 #include <thread>
+#include <vector>
 #include "Pythia8/Pythia.h"
 // #include "fastjet/PseudoJet.hh"
 // #include "fastjet/ClusterSequence.hh"
 #include "Pythia8Plugins/HepMC2.h"
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 
 // ROOT headers
 #include "TH1.h"
@@ -26,11 +25,6 @@ std::string getCurrentTime();
 
 /**
  * @brief Main function for generating MC events
- *
- * @param argc [description]
- * @param argv [description]
- *
- * @return [description]
  */
 int main(int argc, char *argv[]) {
 
@@ -52,13 +46,14 @@ int main(int argc, char *argv[]) {
 
   // Interface for conversion from Pythia8::Event to HepMC event.
   HepMC::Pythia8ToHepMC ToHepMC;
-  HepMC::IO_GenEvent ascii_io(opts.filenameHEPMC(), std::ios::out);
+  HepMC::IO_GenEvent *ascii_io = nullptr;
   if (opts.writeToHEPMC()) {
+    ascii_io = new HepMC::IO_GenEvent(opts.filenameHEPMC(), std::ios::out);
     cout << "Writing HepMC to " << opts.filenameHEPMC() << endl;
   }
 
   // Create an LHAup object that can access relevant information in pythia for writing to LHE
-  LHAupFromPYTHIA8 * myLHA;
+  LHAupFromPYTHIA8 * myLHA = nullptr;
   if (opts.writeToLHE()) {
     cout << "Writing LHE to " << opts.filenameLHE() << endl;
     // Create an LHAup object that can access relevant information in pythia.
@@ -73,28 +68,30 @@ int main(int argc, char *argv[]) {
 
   // Text file to write progress - handy for monitoring during jobs
   ofstream progressFile;
-  std::string ext = ".hepmc";
-  std::string stem = opts.filenameHEPMC().substr(0, opts.filenameHEPMC().size() - ext.size());
+  std::string stem = opts.generateFilename();
   progressFile.open(stem + "_progress.txt");
 
   //---------------------------------------------------------------------------
   // SETUP PYTHIA HISTOGRAMS
+  // very quick n basic, designed for sanity check after running
   //---------------------------------------------------------------------------
   Hist hTransverseMomentum("h transverse momentum", 40, 0, 200);
   Hist a1Separation("a1 separation deltaR", 100, 0, 5);
   Hist a1PhiSeparation("a1 separation deltaPhi", 31, 0, 3.1);
   Hist a1Momentum("a1 momentum", 80, 0, 400);
   Hist a1TransverseMomentum("a1 transverse momentum", 80, 0, 400);
-  Hist bbDR("a1 product separation deltaR", 100, 0, 5);
-  Hist bbDPhi("a1 product separation deltaPhi", 31, 0, 3.1);
+  Hist a1DecayDR("a1 decay product separation deltaR", 100, 0, 5);
+  Hist a1DecayDPhi("a1 decay product separation deltaPhi", 31, 0, 3.1);
 
   //---------------------------------------------------------------------------
   // SETUP ROOT FILES/HISTOGRAMS
   //---------------------------------------------------------------------------
-  TString rootFilename("hist_a1a1_"+lexical_cast<std::string>(opts.mass())+".root");
-  TFile * outFile = new TFile(rootFilename, "RECREATE");
-
-  TH1F * h_bbDr = new TH1F("bbDr","bb DeltaR", 100, 0, 5);
+  TFile * outFile = nullptr;
+  if (opts.writeToROOT()) {
+    outFile = new TFile((opts.generateFilename()+".root").c_str(), "RECREATE");
+  }
+  TH1F * h_a1Dr = new TH1F("a1Dr","a1 DeltaR", 100, 0, 5);
+  TH1F * h_a1DecayDr = new TH1F("a1DecayDr","a1 decay products DeltaR", 100, 0, 5);
 
   //---------------------------------------------------------------------------
   // GENERATE EVENTS
@@ -140,25 +137,31 @@ int main(int argc, char *argv[]) {
         a1Separation.fill(REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
         a1PhiSeparation.fill(phi(pythia.event[d1].p(), pythia.event[d2].p()));
 
+        if (opts.writeToROOT()) {
+          h_a1Dr->Fill(REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
+        }
+
         // now find all the a1s
-        std::vector<int> a1Ind;
+        std::vector<Particle*> a1s;
         for (int d = d1; d <= d2; ++d) {
           if (pythia.event[d].id() == 36) {
-            a1Ind.push_back(d);
+            a1s.push_back(&pythia.event[d]);
           }
         }
 
         // now plot a1 variables, and for its decay products
-        for (unsigned j = 0; j < a1Ind.size(); ++j) {
-          a1Momentum.fill(pythia.event[a1Ind[j]].pAbs());
-          a1TransverseMomentum.fill(pythia.event[a1Ind[j]].pT());
-
+        for (auto & a1 : a1s) {
+          a1Momentum.fill(a1->pAbs());
+          a1TransverseMomentum.fill(a1->pT());
           // look at a1 daughter particles
-          Vec4 daughter1Mom = pythia.event[pythia.event[a1Ind[j]].daughter1()].p();
-          Vec4 daughter2Mom = pythia.event[pythia.event[a1Ind[j]].daughter2()].p();
-          bbDR.fill(REtaPhi(daughter1Mom, daughter2Mom));
-          h_bbDr->Fill(REtaPhi(daughter1Mom, daughter2Mom));
-          bbDPhi.fill(phi(daughter1Mom, daughter2Mom));
+          Vec4 daughter1Mom = pythia.event[a1->daughter1()].p();
+          Vec4 daughter2Mom = pythia.event[a1->daughter2()].p();
+          a1DecayDR.fill(REtaPhi(daughter1Mom, daughter2Mom));
+          a1DecayDPhi.fill(phi(daughter1Mom, daughter2Mom));
+
+          if (opts.writeToROOT()){
+            h_a1DecayDr->Fill(REtaPhi(daughter1Mom, daughter2Mom));
+          }
         }
         donePlots = true;
       }
@@ -173,7 +176,7 @@ int main(int argc, char *argv[]) {
     if (opts.writeToHEPMC()) {
       HepMC::GenEvent* hepmcevt = new HepMC::GenEvent(HepMC::Units::GEV, HepMC::Units::MM);
       ToHepMC.fill_next_event(pythia, hepmcevt);
-      ascii_io << hepmcevt;
+      *ascii_io << hepmcevt;
       delete hepmcevt;
     }
 
@@ -198,15 +201,18 @@ int main(int argc, char *argv[]) {
   cout << a1Separation << endl;
   cout << a1Momentum << endl;
   cout << a1TransverseMomentum << endl;
-  cout << bbDR << endl;
-  cout << bbDPhi << endl;
+  cout << a1DecayDR << endl;
+  cout << a1DecayDPhi << endl;
 
   //---------------------------------------------------------------------------
   // WRITE ROOT HISTOGRAMS TO FILE & TIDY UP
   //---------------------------------------------------------------------------
-  h_bbDr->Write();
-  outFile->Close();
-  delete outFile;
+  if (opts.writeToROOT()) {
+    h_a1DecayDr->Write();
+    h_a1Dr->Write();
+    outFile->Close();
+    delete outFile;
+  }
 
   progressFile.close();
 
@@ -215,8 +221,10 @@ int main(int argc, char *argv[]) {
     myLHA->updateSigma();
     // Write endtag. Overwrite initialization info with new cross sections.
     myLHA->closeLHEF(true);
+    delete myLHA;
   }
 
+  delete ascii_io;
 }
 
 
