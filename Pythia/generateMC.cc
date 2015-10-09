@@ -86,8 +86,10 @@ int main(int argc, char *argv[]) {
   // SETUP ROOT FILES/HISTOGRAMS
   //---------------------------------------------------------------------------
   RootHistManager histMan(opts.writeToROOT());
-  histMan.addHist(new TH1F("a1Dr","a1 DeltaR", 100, 0, 5));
-  histMan.addHist(new TH1F("a1DecayDr","a1 decay products DeltaR", 100, 0, 5));
+  histMan.addHist(new TH1F("hPt","h pT", 150, 0, 150));
+  histMan.addHist(new TH1F("a1Pt","a1 pT", 150, 0, 150));
+  histMan.addHist(new TH1F("a1Dr","a1 DeltaR", 500, 0, 5));
+  histMan.addHist(new TH1F("a1DecayDr","a1 decay products DeltaR", 500, 0, 5));
 
   //---------------------------------------------------------------------------
   // GENERATE EVENTS
@@ -122,7 +124,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < pythia.event.size(); ++i) {
       if (donePlots) break;
 
-      // look at h1, it's daughters, and their daughters
+      // look at h1, its daughters (a1), and their daughters (tau, b, etc)
       if (abs(pythia.event[i].id()) == 25 && pythia.event[i].status() == -62) {
 
         // plot h1 variables
@@ -133,6 +135,7 @@ int main(int argc, char *argv[]) {
         a1Separation.fill(REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
         a1PhiSeparation.fill(phi(pythia.event[d1].p(), pythia.event[d2].p()));
 
+        histMan.fillTH1("hPt", pythia.event[i].pT());
         histMan.fillTH1("a1Dr", REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
 
         // now find all the a1s
@@ -143,16 +146,17 @@ int main(int argc, char *argv[]) {
           }
         }
 
-        // now plot a1 variables, and for its decay products
+        // now plot a1 variables, and plot its decay products
         for (auto & a1 : a1s) {
           a1Momentum.fill(a1->pAbs());
           a1TransverseMomentum.fill(a1->pT());
+          histMan.fillTH1("a1Pt", a1->pT());
+
           // look at a1 daughter particles
           Vec4 daughter1Mom = pythia.event[a1->daughter1()].p();
           Vec4 daughter2Mom = pythia.event[a1->daughter2()].p();
           a1DecayDR.fill(REtaPhi(daughter1Mom, daughter2Mom));
           a1DecayDPhi.fill(phi(daughter1Mom, daughter2Mom));
-
           histMan.fillTH1("a1DecayDr", REtaPhi(daughter1Mom, daughter2Mom));
         }
         donePlots = true;
