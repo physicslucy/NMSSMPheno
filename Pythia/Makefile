@@ -70,6 +70,7 @@ generateMC: RootHistManager.o
 	`$(ROOTDIR)/$(BINDIR)/root-config --libs` \
 
 RootHistManager.o: $(SRCDIR)/RootHistManager.cc $(INCDIR)/RootHistManager.h
+	@if test ! -d $(OBJDIR); then mkdir $(OBJDIR); else : ; fi
 	$(CXX) -c $< -o $(OBJDIR)/$@ -I./$(INCDIR) -I$(ROOTDIR)/$(INCDIR) $(CXX_COMMON)
 
 # Clean up: remove executables and outdated files.
