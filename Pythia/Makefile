@@ -14,6 +14,7 @@ SRCDIR = src
 LIBDIR = lib
 LIBDIRARCH = lib/archive
 BINDIR = bin
+OBJDIR = obj
 
 # Set location of programs depending on system
 # -------------------------------------------------
@@ -56,22 +57,22 @@ BOOST_LIBS = -lboost_system -lboost_filesystem -lboost_program_options -lboost_i
 # Make using e.g. make generateMC
 # For pythia 8.2X
 generateMC: RootHistManager.o
-	$(CXX) $@.cc $(PYTHIA8DIR)/$(LIBDIR)/libpythia8.a RootHistManager.o -o $@.exe \
-	-I$(ROOTDIR)/$(INCDIR) \
+	$(CXX) $(SRCDIR)/$@.cc $(PYTHIA8DIR)/$(LIBDIR)/libpythia8.a $(OBJDIR)/RootHistManager.o -o $@.exe \
+	-I`$(ROOTDIR)/$(BINDIR)/root-config --incdir` \
 	-isystem $(BOOSTDIR_INC) \
 	-I$(HEPMCDIR)/$(INCDIR) \
 	-I$(PYTHIA8DIR)/$(INCDIR) \
-	-I./ $(CXX_COMMON) \
+	-I./include $(CXX_COMMON) \
 	-L./ -Wl,-rpath ./ \
-	-L$(PYTHIA8DIR)/$(LIBDIR) -Wl,-rpath $(PYTHIA8DIR)/$(LIBDIR) -ldl \
+	-L$(PYTHIA8DIR)/$(LIBDIR) -Wl,-rpath $(PYTHIA8DIR)/$(LIBDIR) \
 	-L$(BOOSTDIR_LIB) $(BOOST_LIBS) \
 	-L$(HEPMCDIR)/$(LIBDIR) -Wl,-rpath $(HEPMCDIR)/$(LIBDIR) -lHepMC \
-	`$(ROOTDIR)/$(BINDIR)/root-config --glibs` \
+	`$(ROOTDIR)/$(BINDIR)/root-config --libs` \
 
-RootHistManager.o: RootHistManager.cc RootHistManager.h
-	$(CXX) -c $< -o $@ -I$(ROOTDIR)/$(INCDIR) $(CXX_COMMON)
+RootHistManager.o: $(SRCDIR)/RootHistManager.cc $(INCDIR)/RootHistManager.h
+	$(CXX) -c $< -o $(OBJDIR)/$@ -I./$(INCDIR) -I$(ROOTDIR)/$(INCDIR) $(CXX_COMMON)
 
 # Clean up: remove executables and outdated files.
 .PHONY: clean
 clean:
-	rm *.o *.exe
+	rm $(OBJDIR)/*.o *.exe
