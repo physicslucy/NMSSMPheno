@@ -2,7 +2,6 @@
 #define ROOTHISTMANAGER_H
 
 #include <iostream>
-#include <vector>
 #include <map>
 
 #include "TH1.h"
@@ -23,7 +22,7 @@ class RootHistManager
         virtual void fillTH2(const std::string hist, const double valueX, const double valueY, const double weight=1);
         virtual void write(TFile* file);
     private:
-        virtual bool checkHistName(const std::string hist);
+        virtual void checkHistName(const std::string hist);
         std::map<std::string, TH1*> hists_;
         bool store_;
 };
