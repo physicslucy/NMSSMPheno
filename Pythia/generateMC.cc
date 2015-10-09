@@ -14,6 +14,7 @@
 
 // Own headers
 #include "PythiaProgramOpts.h"
+#include "RootHistManager.h"
 
 using std::cout;
 using std::endl;
@@ -84,12 +85,9 @@ int main(int argc, char *argv[]) {
   //---------------------------------------------------------------------------
   // SETUP ROOT FILES/HISTOGRAMS
   //---------------------------------------------------------------------------
-  TFile * outFile = nullptr;
-  if (opts.writeToROOT()) {
-    outFile = new TFile((opts.generateFilename()+".root").c_str(), "RECREATE");
-  }
-  TH1F * h_a1Dr = new TH1F("a1Dr","a1 DeltaR", 100, 0, 5);
-  TH1F * h_a1DecayDr = new TH1F("a1DecayDr","a1 decay products DeltaR", 100, 0, 5);
+  RootHistManager histMan(opts.writeToROOT());
+  histMan.addHist(new TH1F("a1Dr","a1 DeltaR", 100, 0, 5));
+  histMan.addHist(new TH1F("a1DecayDr","a1 decay products DeltaR", 100, 0, 5));
 
   //---------------------------------------------------------------------------
   // GENERATE EVENTS
@@ -135,9 +133,7 @@ int main(int argc, char *argv[]) {
         a1Separation.fill(REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
         a1PhiSeparation.fill(phi(pythia.event[d1].p(), pythia.event[d2].p()));
 
-        if (opts.writeToROOT()) {
-          h_a1Dr->Fill(REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
-        }
+        histMan.fillTH1("a1Dr", REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
 
         // now find all the a1s
         std::vector<Particle*> a1s;
@@ -157,9 +153,7 @@ int main(int argc, char *argv[]) {
           a1DecayDR.fill(REtaPhi(daughter1Mom, daughter2Mom));
           a1DecayDPhi.fill(phi(daughter1Mom, daughter2Mom));
 
-          if (opts.writeToROOT()){
-            h_a1DecayDr->Fill(REtaPhi(daughter1Mom, daughter2Mom));
-          }
+          histMan.fillTH1("a1DecayDr", REtaPhi(daughter1Mom, daughter2Mom));
         }
         donePlots = true;
       }
@@ -188,6 +182,7 @@ int main(int argc, char *argv[]) {
 
   } // end of generating events loop
 
+  progressFile.close();
 
   //---------------------------------------------------------------------------
   // PRINTOUT STATS & HISTOGRAMS
@@ -206,13 +201,12 @@ int main(int argc, char *argv[]) {
   // WRITE ROOT HISTOGRAMS TO FILE & TIDY UP
   //---------------------------------------------------------------------------
   if (opts.writeToROOT()) {
-    h_a1DecayDr->Write();
-    h_a1Dr->Write();
-    outFile->Close();
-    delete outFile;
+      TFile * outFile = new TFile((opts.filenameROOT()).c_str(), "RECREATE");
+      histMan.write(outFile);
+      outFile->Close();
+      delete outFile;
   }
 
-  progressFile.close();
 
   if (opts.writeToLHE()) {
     // Update the cross section info based on Monte Carlo integration during run.

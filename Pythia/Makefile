@@ -54,8 +54,8 @@ CXX_COMMON = -std=c++11 -pthread -D_USE_XOPEN2K8 -Wall -Wextra -Wshadow -pedanti
 
 # Make using e.g. make generateMC
 # For pythia 8.2X
-.cc:
-	$(CXX) $@.cc $(PYTHIA8DIR)/$(LIBDIR)/libpythia8.a -o $@.exe \
+generateMC: RootHistManager.o
+	$(CXX) $@.cc $(PYTHIA8DIR)/$(LIBDIR)/libpythia8.a RootHistManager.o -o $@.exe \
 	-I$(ROOTDIR)/$(INCDIR) \
 	-isystem $(BOOSTDIR_INC) \
 	-I$(HEPMCDIR)/$(INCDIR) \
@@ -66,8 +66,11 @@ CXX_COMMON = -std=c++11 -pthread -D_USE_XOPEN2K8 -Wall -Wextra -Wshadow -pedanti
 	-L$(HEPMCDIR)/$(LIBDIR) -Wl,-rpath $(HEPMCDIR)/$(LIBDIR) -lHepMC \
 	-Wl,-rpath $(ROOTDIR)/$(LIBDIR) `$(ROOTDIR)/$(BINDIR)/root-config --glibs` \
 
+RootHistManager.o: RootHistManager.cc RootHistManager.h
+	$(CXX) -c $< -o $@ -I$(ROOTDIR)/$(INCDIR) $(CXX_COMMON)
 
 # Clean up: remove executables and outdated files.
 .PHONY: clean
 clean:
+	rm *.o
 	rm *.exe
