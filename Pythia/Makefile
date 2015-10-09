@@ -47,7 +47,8 @@ endif
 
 # Other common flags
 # -------------------------------------------------
-CXX_COMMON = -std=c++11 -pthread -D_USE_XOPEN2K8 -Wall -Wextra -Wshadow -pedantic-errors
+CXX_COMMON = -std=c++11 -O2 -pthread -D_USE_XOPEN2K8 -Wall -Wextra -Wshadow -pedantic-errors
+BOOST_LIBS = -lboost_system -lboost_filesystem -lboost_program_options -lboost_iostreams
 
 # `$(FASTJETDIR)/bin/fastjet-config --cxxflags --plugins` \
 # `$(FASTJETDIR)/bin/fastjet-config --libs --plugins` \
@@ -60,11 +61,12 @@ generateMC: RootHistManager.o
 	-isystem $(BOOSTDIR_INC) \
 	-I$(HEPMCDIR)/$(INCDIR) \
 	-I$(PYTHIA8DIR)/$(INCDIR) \
-	$(CXX_COMMON) \
-	-I./ -L./ -Wl,-rpath ./ -lz -Wl,-rpath $(PYTHIA8DIR)/$(LIBDIR) -ldl \
-	-L$(BOOSTDIR_LIB) -lboost_system -lboost_filesystem -lboost_program_options -lboost_iostreams -Wl,-rpath $(BOOSTDIR_LIB) \
+	-I./ $(CXX_COMMON) \
+	-L./ -Wl,-rpath ./ \
+	-L$(PYTHIA8DIR)/$(LIBDIR) -Wl,-rpath $(PYTHIA8DIR)/$(LIBDIR) -ldl \
+	-L$(BOOSTDIR_LIB) $(BOOST_LIBS) \
 	-L$(HEPMCDIR)/$(LIBDIR) -Wl,-rpath $(HEPMCDIR)/$(LIBDIR) -lHepMC \
-	-Wl,-rpath $(ROOTDIR)/$(LIBDIR) `$(ROOTDIR)/$(BINDIR)/root-config --glibs` \
+	`$(ROOTDIR)/$(BINDIR)/root-config --glibs` \
 
 RootHistManager.o: RootHistManager.cc RootHistManager.h
 	$(CXX) -c $< -o $@ -I$(ROOTDIR)/$(INCDIR) $(CXX_COMMON)
@@ -72,5 +74,4 @@ RootHistManager.o: RootHistManager.cc RootHistManager.h
 # Clean up: remove executables and outdated files.
 .PHONY: clean
 clean:
-	rm *.o
-	rm *.exe
+	rm *.o *.exe
