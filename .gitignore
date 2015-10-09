@@ -11,5 +11,7 @@
 *.metrics
 *.rescue*
 *.hepmc
+*.o
+*.lhe
 
 logs/
