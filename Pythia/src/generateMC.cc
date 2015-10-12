@@ -74,11 +74,11 @@ int main(int argc, char *argv[]) {
   // SETUP PYTHIA HISTOGRAMS
   // very quick n basic, designed for sanity check after running
   //---------------------------------------------------------------------------
-  Hist hTransverseMomentum("h transverse momentum", 40, 0, 200);
-  Hist a1Separation("a1 separation deltaR", 100, 0, 5);
-  Hist a1PhiSeparation("a1 separation deltaPhi", 31, 0, 3.1);
-  Hist a1Momentum("a1 momentum", 80, 0, 400);
-  Hist a1TransverseMomentum("a1 transverse momentum", 80, 0, 400);
+  Hist hPt("h transverse momentum", 40, 0, 200);
+  Hist a1DR("a1 separation deltaR", 100, 0, 5);
+  Hist a1DPhi("a1 separation deltaPhi", 31, 0, 3.1);
+  Hist a1Eta("a1 pseudorapidity", 100, -5, 5);
+  Hist a1Pt("a1 transverse momentum", 80, 0, 400);
   Hist a1DecayDR("a1 decay product separation deltaR", 100, 0, 5);
   Hist a1DecayDPhi("a1 decay product separation deltaPhi", 31, 0, 3.1);
 
@@ -87,18 +87,19 @@ int main(int argc, char *argv[]) {
   //---------------------------------------------------------------------------
   RootHistManager histMan(opts.writeToROOT());
   histMan.addHist(new TH1F("hPt","h pT", 150, 0, 150));
-  histMan.addHist(new TH1F("a1Pt","a1 pT", 150, 0, 150));
+  histMan.addHist(new TH1F("a1Pt","a1 pT", 400, 0, 400));
+  histMan.addHist(new TH1F("a1Eta","a1 pseudorapidity", 500, -5, 5));
   histMan.addHist(new TH1F("a1Dr","a1 DeltaR", 500, 0, 5));
   histMan.addHist(new TH1F("a1DecayDr","a1 decay products DeltaR", 500, 0, 5));
 
   //---------------------------------------------------------------------------
   // GENERATE EVENTS
   //---------------------------------------------------------------------------
-  int outputEvery = 50;  // frequency for printing progress updates
+  int progressFreq = 50;
 
   for (int iEvent = 0; iEvent < opts.nEvents(); ++iEvent) {
     // output progress info
-    if (iEvent % outputEvery == 0) {
+    if (iEvent % progressFreq == 0) {
       cout << "iEvent: " << iEvent << " - " << getCurrentTime() << endl;
       progressFile << "iEvent: " << iEvent << " - " << getCurrentTime() << endl;
     }
@@ -122,18 +123,18 @@ int main(int argc, char *argv[]) {
 
     // find h decay products and look at separation
     for (int i = 0; i < pythia.event.size(); ++i) {
-      if (donePlots) break;
+      if (donePlots) break; // skip the rest of the event listing, we're done
 
       // look at h1, its daughters (a1), and their daughters (tau, b, etc)
       if (abs(pythia.event[i].id()) == 25 && pythia.event[i].status() == -62) {
 
         // plot h1 variables
-        hTransverseMomentum.fill(pythia.event[i].pT());
+        hPt.fill(pythia.event[i].pT());
 
         int d1 = pythia.event[i].daughter1();
         int d2 = pythia.event[i].daughter2();
-        a1Separation.fill(REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
-        a1PhiSeparation.fill(phi(pythia.event[d1].p(), pythia.event[d2].p()));
+        a1DR.fill(REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
+        a1DPhi.fill(phi(pythia.event[d1].p(), pythia.event[d2].p()));
 
         histMan.fillTH1("hPt", pythia.event[i].pT());
         histMan.fillTH1("a1Dr", REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
@@ -148,9 +149,10 @@ int main(int argc, char *argv[]) {
 
         // now plot a1 variables, and plot its decay products
         for (auto & a1 : a1s) {
-          a1Momentum.fill(a1->pAbs());
-          a1TransverseMomentum.fill(a1->pT());
+          a1Eta.fill(a1->eta());
+          a1Pt.fill(a1->pT());
           histMan.fillTH1("a1Pt", a1->pT());
+          histMan.fillTH1("a1Eta", a1->eta());
 
           // look at a1 daughter particles
           Vec4 daughter1Mom = pythia.event[a1->daughter1()].p();
@@ -166,7 +168,6 @@ int main(int argc, char *argv[]) {
     //-------------------------------------------------------------------------
     // STORE IN HEPMC/LHE
     //-------------------------------------------------------------------------
-
     // Construct new empty HepMC event and fill it.
     // Write the HepMC event to file. Done with it.
     if (opts.writeToHEPMC()) {
@@ -193,11 +194,11 @@ int main(int argc, char *argv[]) {
   //---------------------------------------------------------------------------
   pythia.stat();
 
-  cout << hTransverseMomentum << endl;
-  cout << a1PhiSeparation << endl;
-  cout << a1Separation << endl;
-  cout << a1Momentum << endl;
-  cout << a1TransverseMomentum << endl;
+  cout << hPt << endl;
+  cout << a1DPhi << endl;
+  cout << a1DR << endl;
+  cout << a1Eta << endl;
+  cout << a1Pt << endl;
   cout << a1DecayDR << endl;
   cout << a1DecayDPhi << endl;
 
@@ -210,7 +211,6 @@ int main(int argc, char *argv[]) {
       outFile->Close();
       delete outFile;
   }
-
 
   if (opts.writeToLHE()) {
     // Update the cross section info based on Monte Carlo integration during run.
