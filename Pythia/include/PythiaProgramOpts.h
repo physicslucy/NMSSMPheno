@@ -189,7 +189,7 @@ class PythiaProgramOpts
 
     std::string generateFilename() {
       std::string channel = fs::path(cardName_).stem().string();
-      return channel + "_ma1_" + lexical_cast<std::string>(mass_) + "_" + lexical_cast<std::string>(seed_);
+      return channel + "_ma1_" + lexical_cast<std::string>(mass_) + "_n" + lexical_cast<std::string>(nEvents_) + "_seed" + lexical_cast<std::string>(seed_);
     }
 
   private:
