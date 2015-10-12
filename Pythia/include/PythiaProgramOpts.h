@@ -45,7 +45,7 @@ class PythiaProgramOpts
 
       desc.add_options()
         ("help,h", "Produce help message")
-        ("card", po::value<std::string>(&cardName_),
+        ("card", po::value<std::string>(&cardName_)->required(),
           "Name of Pythia8 settings card to loads physics processes")
         ("number,n", po::value<int>(&nEvents_)->default_value(nEvents_),
           "Number of events to run over [default = 1]. ")
@@ -80,12 +80,17 @@ class PythiaProgramOpts
       po::variables_map vm;
       try {
         po::store(po::parse_command_line(argc, argv, desc), vm);
-      } catch (boost::program_options::invalid_option_value e) {
+      } catch (po::invalid_option_value e) {
         printOptionError(e, "Invalid option value", desc);
-      } catch (boost::program_options::unknown_option e) {
+      } catch (po::unknown_option e) {
         printOptionError(e, "Unrecognised option", desc);
-      } catch (boost::program_options::invalid_command_line_syntax e) {
+      } catch (po::invalid_command_line_syntax e) {
         printOptionError(e, "Invalid command line syntax", desc);
+      } catch (boost::program_options::required_option e) {
+        printOptionError(e, "Required option missing", desc);
+      } catch (po::error e) {
+        // should I just use this one?
+        printOptionError(e, "Error in program_options", desc);
       }
 
       po::notify(vm);
@@ -95,11 +100,7 @@ class PythiaProgramOpts
         exit(1);
       }
 
-      // Check we have an input card specified, and it exists
-      if (!vm.count("card")) {
-        throw std::runtime_error("You must specify an input card defining the physics process(es)!");
-      }
-
+      // Check input card exists
       if (!fs::exists(fs::path(cardName_))) {
         throw std::runtime_error("Input card \"" + cardName_+ "\" does not exist");
       }
