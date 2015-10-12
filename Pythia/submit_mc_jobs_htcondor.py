@@ -77,7 +77,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     if args.v:
         log.setLevel(logging.DEBUG)
 
-    log.debug(args)
+    log.debug('program args: %s' % args)
 
     # Do some checks
     # -------------------------------------------------------------------------
@@ -186,7 +186,7 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
     # set mass in args passed to program
     set_option_in_args(args.args, '--mass', str(mass))
 
-    log.debug(args.args)
+    log.debug('args.args before: %s' % args.args)
 
     log.info("DAG file: %s" % dag_filename)
     with open(dag_filename, 'w') as dag_file:
@@ -237,6 +237,7 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
 
             job_opts.append('--args')
             job_opts.extend(exe_args)
+            log.debug('job_opts: %s' % job_opts)
             log_name = os.path.splitext(os.path.basename(dag_filename))[0]
             dag_file.write('VARS %s opts="%s" logdir="%s" logfile="%s"\n' % (job_name,
                                                                              ' '.join(job_opts),
