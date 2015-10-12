@@ -13,5 +13,6 @@
 *.hepmc
 *.o
 *.lhe
+*.dag.*
 
 logs/
