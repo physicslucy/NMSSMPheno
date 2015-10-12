@@ -249,24 +249,59 @@ def generate_dir_soolin(channel):
 def get_option_in_args(args, flag):
     """Return value that accompanied flag in list of args.
 
-    >>> args = ['--foo', 'bar', '--man', 'bear']
+    Will return None if there is no accompanying value, and will raise a
+    KeyError if the flag does not appear in the list.
+
+    >>> args = ['--foo', 'bar', '--man']
     >>> get_option_in_args(args, "--foo")
     bar
+    >>> get_option_in_args(args, "--man")
+    None
+    >>> get_option_in_args(args, "--fish")
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "submit_mc_jobs_htcondor.py", line 272, in get_option_in_args
+        raise KeyError('%s not in args' % flag)
+    KeyError: '--fish not in args'
     """
     if flag not in args:
         raise KeyError('%s not in args' % flag)
-    return args[args.index(flag) + 1]
+    if flag == args[-1]:
+        return None
+    val = args[args.index(flag) + 1]
+    if val.startswith('-'):
+        return None
+    return val
 
 
 def set_option_in_args(args, flag, value):
     """Set value for flag in list of args.
 
-    >>> args = ['--foo', 'bar', '--man', 'bear']
+    If no value already exists, it will insert the value after the flag.
+    If the flag does not appear in args, a KeyError will be raised.
+
+    >>> args = ['--foo', 'bar', '--man', '--pasta']
     >>> set_option_in_args(args, '--foo', 'ball')
     >>> args
-    ['--foo', 'ball', '--man', 'bear']
+    ['--foo', 'ball', '--man', '--pasta']
+    >>> set_option_in_args(args, '--man', 'trap')
+    >>> args
+    ['--foo', 'ball', '--man', 'trap', --pasta']
+    >>> set_option_in_args(args, '--pasta', 'bake')
+    >>> args
+    ['--foo', 'ball', '--man', 'trap', --pasta', 'bake']
+
     """
-    args[args.index(flag) + 1] = value
+    # first check if a value already exists.
+    if get_option_in_args(args, flag):
+        args[args.index(flag) + 1] = value
+    else:
+        if flag == args[-1]:
+            # if the flag is the last entry in args
+            args.append(value)
+        elif args[args.index(flag) + 1].startswith('-'):
+            # if the next entry is a flag, we need to insert our value
+            args.insert(args.index(flag) + 1, value)
 
 
 def frange(start, stop, step=1.0):
