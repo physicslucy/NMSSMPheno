@@ -129,6 +129,10 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     # Loop over required mass(es), generating DAG files for each
     # -------------------------------------------------------------------------
     if args.massRange:
+        if any(x<=0 for x in args.massRange):
+            raise RuntimeError('You cannot have a mass <= 0')
+        if args.massRange[1] < args.massRange[0]:
+            raise RuntimeError('You cannot have endMass < startMass')
         masses = frange(args.massRange[0], args.massRange[1], args.massRange[2])
     else:
         masses = [get_option_in_args(args.args, '--mass')]
