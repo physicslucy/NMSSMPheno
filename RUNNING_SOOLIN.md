@@ -58,6 +58,8 @@ For example, submitting 3 jobs, each of 10k events, using the [ggh125_2a_4tau.cm
 --args --card input_cards/ggh125_2a_4tau.cmnd -n 10000 --hepmc --root
 ```
 
+This will take approximately 10 minutes.
+
 ##Apply detector simulation
 
 Detector simulation is applied using Delphes. We pass it a HepMC file as generated in the previous step, and a card specifying the detector configuration.
