@@ -75,7 +75,7 @@ CT10nlo PDF set, member #0, version 4; LHAPDF ID = 11000
 
 ##Delphes (detector simulation)
 
-Assumes ROOT5 already installed.
+Assumes ROOT5 already installed. (**NEW**: Delphes 3.3.0 supports root6. Dunno whether to use it or not...)
 
 ```
 git clone git@github.com:delphes/delphes.git
@@ -85,4 +85,8 @@ make -j4
 
 ##MadAnalysis (analysis)
 
-Download tar.
+Download tar. You should be able to run it out of the box:
+
+```
+
+```

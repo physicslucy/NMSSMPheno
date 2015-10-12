@@ -18,7 +18,7 @@ SM processes are generated with MadGraph5_aMC@NLO, whilst SUSY processes are gen
 
 **TODO**
 
-####Running batch jobs
+####Running batch jobs on HTCondor
 
 **TODO**
 
@@ -45,9 +45,18 @@ See a list of options by using the `--help` flag. **As a minimum** you will need
 - `--lhe`: saves the **hard process only** in LHE format. Suitable for passing to another MC program to hadronise, or to study the hard event itself.
 - `--root`: saves user-defined histograms to a ROOT file. The user must define the histogram objects, and can then fill them by analysing the Pythia event object. This is done in [generateMC.cc](Pythia/src/generateMC.cc).
 
-####Running batch jobs
+####Running batch jobs on HTCondor
 
-**TODO**
+Use the script [submit_mc_jobs_htcondor.py](Pythia/submit_mc_jobs_htcondor.py). Show possible option using the `--help` flag. **As a minimum** you will need to specify the range of job IDs to run over. The job ID is also the random number seed, so you must ensure that they differ. There are also optional arguments for specifying output directory, using a different executable, etc. You can also pass the options that `generateMC.exe` uses by using the `--args` flag. You must specify, as a minimum, the input card, and mass of a1 (if you are not using the `--massRange` option). Each job will generate the same number of events, as specified using the `-n|--number` flag.
+
+There is also the option of submitting jobs for a range of a1 masses. This is accomplished by using the `--massRange` flag and providing the start/end masses, and the mass interval. For each mass point, jobs with the job IDs specified will be submitted.
+
+For example, submitting 3 jobs, each of 10k events, using the [ggh125_2a_4tau.cmnd](Pythia/input_cards/ggh125_2a_4tau.cmnd) card, saving the output to hepmc and root formats to the default dir on hdfs (`/hdfs/users/$LOGNAME/NMSSMPheno/Pythia8/<card>/<date>`), with ma1 = [4, 6, 8]:
+
+```
+./submit_mc_jobs_htcondor.py 1 3 --massRange 4 8 2 \
+--args --card input_cards/ggh125_2a_4tau.cmnd -n 10000 --hepmc --root
+```
 
 ##Apply detector simulation
 
@@ -61,7 +70,7 @@ For example:
 
 **TODO**
 
-###Running batch jobs
+###Running batch jobs on HTCondor
 
 **TODO**
 
@@ -69,6 +78,6 @@ For example:
 
 **TODO**
 
-###Running batch jobs
+###Running batch jobs on HTCondor
 
 **TODO**

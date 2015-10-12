@@ -101,8 +101,7 @@ Now we can try and compile ROOT, telling it to use the correct compilers (as the
 ```
 git clone http://root.cern.ch/git/root.git root5
 cd root5
-# git checkout -b v6-05-02 v6-05-02
-git checkout -b v5-34-32 v5-34-32
+git checkout -b v5-34-34 v5-34-34
 mkdir ../root5_build ../root5_install
 cd ../root5_build
 cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=/local/software/gcc/4.9.1/bin/gcc \
