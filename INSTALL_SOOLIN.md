@@ -5,7 +5,11 @@
 - [Delphes (detector simulation)](#delphes-detector-simulation)
 - [MadAnalysis (analysis)](#madanalysis-analysis)
 
-Big Tip: use CMSSW_7_4_4_ROOT5 environment.
+**VERY IMPORTANT**: do all of this inside the CMSSW_7_4_4_ROOT5 release. It has all the correct GCC, ROOT, etc setup:
+
+```
+cmsrel CMSSW_7_4_4_ROOT5
+```
 
 ##MG5_aMC@NLO (background MC)
 

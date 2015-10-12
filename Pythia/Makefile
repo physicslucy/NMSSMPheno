@@ -54,7 +54,7 @@ BOOST_LIBS = -lboost_system -lboost_filesystem -lboost_program_options -lboost_i
 # `$(FASTJETDIR)/bin/fastjet-config --cxxflags --plugins` \
 # `$(FASTJETDIR)/bin/fastjet-config --libs --plugins` \
 
-# Make using e.g. make generateMC
+# Make using `make`
 # For pythia 8.2X
 generateMC: RootHistManager.o
 	$(CXX) $(SRCDIR)/$@.cc $(PYTHIA8DIR)/$(LIBDIR)/libpythia8.a $(OBJDIR)/RootHistManager.o -o $@.exe \

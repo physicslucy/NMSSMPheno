@@ -32,21 +32,26 @@ blah blah blah
 
 ###SUSY: Pythia8
 
-One program is responsible for running Pythia8, [generateMC.cc](Pythia/generateMC.cc). The exact process(es) are specified using an input card, see [input_cards](Pythia/input_cards). Common options (e.g. beam parameters) are specified in [common_pp13.cmnd](Pythia/input_cards/common_pp13.cmnd). If one wishes to analyse the event (e.g. save a distribution to a ROOT file), one should edit [generateMC.cc](Pythia/generateMC.cc) directly.
+One program is responsible for running Pythia8, [generateMC.cc](Pythia/src/generateMC.cc). The exact process(es) are specified using an input card, see [input_cards](Pythia/input_cards). Common options (e.g. beam parameters) are specified in [common_pp13.cmnd](Pythia/input_cards/common_pp13.cmnd).
 
-Compile the program using
+To compile and produce the executable:
 
 ```
-make generateMC
+cd Pythia
+make
 ```
 
-Run it interactively using
+Then to run it:
 
 ```
 ./generateMC.exe <opts>
 ```
 
-To see possible options use the `--help` flag. At a minimum, you will want to specify the card file, the mass of the lightest boson, and the output format. We use the HepMC format to store the complete event, including hadronisation.
+See a list of options by using the `--help` flag. **As a minimum** you will need the name of an input card. There are also options for changing the number of events to generate, changing the mass of the a1, as well as several output formats. They all take optional filenames. If no filename is specified, then one will be auto-generated based upon the input card, mass, and random number generator seed.
+
+- `--hepmc`: saves the **complete event listing (including hadronisation)** in HepMC format. Suitable for passing to Delphes.
+- `--lhe`: saves the **hard process only** in LHE format. Suitable for passing to another MC program to hadronise, or to study the hard event itself.
+- `--root`: saves user-defined histograms to a ROOT file. The user must define the histogram objects, and can then fill them by analysing the Pythia event object. This is done in [generateMC.cc](Pythia/src/generateMC.cc).
 
 ####Running on PBS batch system
 
