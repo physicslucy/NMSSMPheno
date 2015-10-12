@@ -84,6 +84,12 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     if not os.path.isfile(args.exe):
         raise RuntimeError('Executable %s does not exist' % args.exe)
 
+    if args.jobIdRange[0] < 1:
+        raise RuntimeError('The first jobIdRange argument must be >= 1.')
+
+    if args.jobIdRange[1] < args.jobIdRange[0]:
+        raise RuntimeError('The second jobIdRange argument must be >= the first.')
+
     # Get the input card from user's options & check it exists
     try:
         card = get_option_in_args(args.args, "--card")
