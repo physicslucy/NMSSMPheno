@@ -110,21 +110,23 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
 
     checkCreateDir(args.oDir, args.v)
 
-    # Copy across input card to hdfs
+    # Copy across input cards to hdfs to sandbox them
     # -------------------------------------------------------------------------
     if not args.dry:
-        call(['hadoop', 'fs', '-copyFromLocal', '-f', 'input_cards', args.oDir])
-
-    # Setup log directory
-    # -------------------------------------------------------------------------
-    log_dir = '%s/logs' % generate_subdir(args.channel)
-    checkCreateDir(log_dir, args.v)
+        log.debug('Copying across input_cards...')
+        call(['hadoop', 'fs', '-copyFromLocal', '-f', 'input_cards', args.oDir.replace('/hdfs', '')])
 
     # Copy executable to outputdir to sandbox it
     # -------------------------------------------------------------------------
     sandbox_exe = os.path.join(args.oDir, os.path.basename(args.exe))
     if not args.dry:
+        log.debug('Copying across exe...')
         shutil.copy2(args.exe, sandbox_exe)
+
+    # Setup log directory
+    # -------------------------------------------------------------------------
+    log_dir = '%s/logs' % generate_subdir(args.channel)
+    checkCreateDir(log_dir, args.v)
 
     # Loop over required mass(es), generating DAG files for each
     # -------------------------------------------------------------------------
@@ -138,6 +140,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
         masses = [get_option_in_args(args.args, '--mass')]
 
     for mass in masses:
+
         # File stem common for all dag and status files
         # -------------------------------------------------------------------------
         mass_str = '%g' % mass if isinstance(mass, float) else str(mass)
