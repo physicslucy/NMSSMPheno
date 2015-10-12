@@ -74,6 +74,8 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
                         action='store_true')
     args = parser.parse_args(args=in_args)
 
+    log.info('>>> Creating jobs')
+
     if args.v:
         log.setLevel(logging.DEBUG)
 
@@ -158,12 +160,14 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
 
         # Submit it
         # -------------------------------------------------------------------------
-        if not args.dry:
+        if args.dry:
+            log.warning('Dry run - not submitting jobs or copying files.')
+        else:
             call(['condor_submit_dag', dag_name])
             log.info('Check status with:')
             log.info('DAGstatus.py %s' % status_name)
-            print ''
             log.info('Condor log files written to: %s' % log_dir)
+            print''
 
 
 def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe, mass, args):
