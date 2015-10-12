@@ -10,6 +10,7 @@
 #include <boost/system/error_code.hpp>
 
 using std::cout;
+using std::cerr;
 using std::endl;
 using boost::lexical_cast;
 
@@ -37,8 +38,8 @@ class PythiaProgramOpts
     {
       po::options_description desc("\nProduces 13 TeV MC for p-p collisions.\n"
         "User must specify the physics process(es) to be generated \nvia an input"
-        " card (see input_cards for examples).\nDefaults for beams, PDF, etc are "
-        "set in input_card/common_pp13.cmnd\n\nAllowed options:");
+        " card (see input_cards directory for examples).\nDefaults for beams, "
+        "PDF, etc are set in input_cards/common_pp13.cmnd\n\nAllowed options:");
 
       std::string defaultFile = "<card>_ma1_<mass>_<seed>";
 
@@ -80,17 +81,12 @@ class PythiaProgramOpts
       try {
         po::store(po::parse_command_line(argc, argv, desc), vm);
       } catch (boost::program_options::invalid_option_value e) {
-        cout << "Invalid option value: " << e.what() << endl;
-        cout << desc << endl;
-        cout << "Exiting" << endl;
-        exit(1);
+        printOptionError(e, "Invalid option value", desc);
       } catch (boost::program_options::unknown_option e) {
-        cout << "Unrecognised option: " << e.what() << endl;
-        cout << desc << endl;
-        cout << "Exiting" << endl;
-        exit(1);
+        printOptionError(e, "Unrecognised option", desc);
+      } catch (boost::program_options::invalid_command_line_syntax e) {
+        printOptionError(e, "Invalid command line syntax", desc);
       }
-
 
       po::notify(vm);
 
@@ -99,7 +95,11 @@ class PythiaProgramOpts
         exit(1);
       }
 
-      // Check we have an existing input card
+      // Check we have an input card specified, and it exists
+      if (!vm.count("card")) {
+        throw std::runtime_error("You must specify an input card defining the physics process(es)!");
+      }
+
       if (!fs::exists(fs::path(cardName_))) {
         throw std::runtime_error("Input card \"" + cardName_+ "\" does not exist");
       }
@@ -192,6 +192,13 @@ class PythiaProgramOpts
     }
 
   private:
+
+    void printOptionError(po::error &e, std::string message, po::options_description desc) {
+      cerr << message << ": " << e.what() << endl;
+      cerr << desc << endl;
+      cerr << "Exiting" << endl;
+      exit(1);
+    }
 
     static bool checkExtension(std::string filename, std::string ext) {
       boost::algorithm::to_lower(filename);
