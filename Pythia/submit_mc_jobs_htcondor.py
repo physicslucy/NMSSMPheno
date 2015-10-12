@@ -194,7 +194,10 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
         n_events = 1
 
     # set mass in args passed to program
-    set_option_in_args(args.args, '--mass', str(mass))
+    if '--mass' in args.args:
+        set_option_in_args(args.args, '--mass', str(mass))
+    else:
+        args.args.extend(['--mass', mass])
 
     log.debug('args.args before: %s' % args.args)
 
