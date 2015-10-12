@@ -183,32 +183,48 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
         for job_ind in xrange(args.jobIdRange[0], args.jobIdRange[1] + 1):
             job_name = '%d_%s' % (job_ind, args.channel)
             dag_file.write('JOB %s %s\n' % (job_name, condor_filename))
-            exe_args = args.args[:]
-
-            # Auto generate output filename if necessary
-            if "--hepmc" not in exe_args:
-                hepmc_name = "%s_ma1_%s_n%s.hepmc" % (args.channel, mass, n_events)
-                exe_args.extend(['--hepmc', hepmc_name])
-
-            # Use the filename itself, ignore any directories from user.
-            hepmc_name = os.path.basename(get_option_in_args(exe_args, "--hepmc"))
-
-            # Add in seed/job ID to filename.
-            hepmc_name = "%s_%d.hepmc" % (os.path.splitext(hepmc_name)[0], job_ind)
-            set_option_in_args(exe_args, "--hepmc", hepmc_name)
 
             remote_exe = 'mc.exe'
+            # args to pass to the script on the worker node
             job_opts = ['--copyToLocal', os.path.abspath('input_cards'), 'input_cards',
                         '--copyToLocal', exe, remote_exe,
-                        '--exe', remote_exe,
-                        '--copyFromLocal', hepmc_name, args.oDir,
-                        '--args']
+                        '--exe', remote_exe]
 
+            exe_args = args.args[:]
             # Add in RNG seed based on job index
             exe_args.extend(['--seed', str(job_ind)])
+
+            # Sort out output files. Ensure that they have the seed appended to
+            # filename, and that they will be copied to hdfs afterwards.
+            if "--hepmc" not in exe_args:
+                log.warning("You didn't specify --hepmc in your list of --args. "
+                            "No HepMC file will be produced.")
+            else:
+                # Auto generate output filename if necessary
+                # Little bit hacky, as we have to manually sync with PythiaProgramOpts.h
+                if not get_option_in_args(args.args, '--hepmc'):
+                    hepmc_name = "%s_ma1_%s_n%s.hepmc" % (args.channel, mass, n_events)
+                    set_option_in_args(exe_args, '--hepmc', hepmc_name)
+
+                # Use the filename itself, ignore any directories from user.
+                hepmc_name = os.path.basename(get_option_in_args(exe_args, "--hepmc"))
+
+                # Add in seed/job ID to filename. Note that generateMC.cc adds the
+                # seed to the auto-generated filename, so we only need to modify it
+                # if the user has specified the name
+                hepmc_name = "%s_seed%d.hepmc" % (os.path.splitext(hepmc_name)[0], job_ind)
+                set_option_in_args(exe_args, "--hepmc", hepmc_name)
+
+                # make sure we transfer hepmc to hdfs after generating
+                job_opts.extend(['--copyFromLocal', hepmc_name, args.oDir])
+
+            job_opts.append('--args')
             job_opts.extend(exe_args)
             log_name = os.path.splitext(os.path.basename(dag_filename))[0]
-            dag_file.write('VARS %s opts="%s" logdir="%s" logfile="%s"\n' % (job_name, ' '.join(job_opts), log_dir, log_name))
+            dag_file.write('VARS %s opts="%s" logdir="%s" logfile="%s"\n' % (job_name,
+                                                                             ' '.join(job_opts),
+                                                                             log_dir,
+                                                                             log_name))
         dag_file.write('NODE_STATUS_FILE %s 30\n' % status_filename)
 
 
@@ -264,6 +280,7 @@ def get_option_in_args(args, flag):
         raise KeyError('%s not in args' % flag)
     KeyError: '--fish not in args'
     """
+    # maybe a dict would be better for this and set_option_in_args()?
     if flag not in args:
         raise KeyError('%s not in args' % flag)
     if flag == args[-1]:
