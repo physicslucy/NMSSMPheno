@@ -85,9 +85,16 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
         raise RuntimeError('Executable %s does not exist' % args.exe)
 
     # Get the input card from user's options & check it exists
-    card = get_option_in_args(args.args, "--card")
+    try:
+        card = get_option_in_args(args.args, "--card")
+    except KeyError as e:
+        log.error('You did not specify an input card!')
+        raise
+    if not card:
+        raise RuntimeError('You did not specify an input card!')
     if not os.path.isfile(card):
         raise RuntimeError('Input card %s does not exist!' % card)
+    args.card = card
     args.channel = os.path.splitext(os.path.basename(card))[0]
 
     # Auto generate output directory if necessary
@@ -97,6 +104,11 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
 
     checkCreateDir(args.oDir, args.v)
 
+    # Copy across input card to hdfs
+    # -------------------------------------------------------------------------
+    if not args.dry:
+        call(['hadoop', 'fs', '-copyFromLocal', '-f', 'input_cards', args.oDir])
+
     # Setup log directory
     # -------------------------------------------------------------------------
     log_dir = '%s/logs' % generate_subdir(args.channel)
@@ -105,7 +117,8 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     # Copy executable to outputdir to sandbox it
     # -------------------------------------------------------------------------
     sandbox_exe = os.path.join(args.oDir, os.path.basename(args.exe))
-    shutil.copy2(args.exe, sandbox_exe)
+    if not args.dry:
+        shutil.copy2(args.exe, sandbox_exe)
 
     # Loop over required mass(es), generating DAG files for each
     # -------------------------------------------------------------------------
@@ -128,8 +141,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
         status_name = file_stem + '.status'
         write_dag_file(dag_filename=dag_name, condor_filename='HTCondor/mcJob.condor',
                        status_filename=status_name, exe=sandbox_exe,
-                       log_dir=log_dir,
-                       mass=mass_str, args=args)
+                       log_dir=log_dir, mass=mass_str, args=args)
 
         # Submit it
         # -------------------------------------------------------------------------
@@ -151,11 +163,11 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
     dag_filename: str
         Name to be used for DAG job file.
     condor_filename: str
-        Name of condor job file to be used for each job
+        Name of condor job file to be used for each job.
     status_filename: str
         Name to be used for DAG status file.
     exe: str
-        Location of sandboxed executable to copy accross
+        Location of sandboxed executable to copy accross.
     mass: str
         Mass of a1 boson. Used to auto-generate HepMC filename.
     args: argparse.Namespace
@@ -186,13 +198,12 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
 
             remote_exe = 'mc.exe'
             # args to pass to the script on the worker node
-            job_opts = ['--copyToLocal', os.path.abspath('input_cards'), 'input_cards',
+            job_opts = ['--copyToLocal', os.path.join(args.oDir, 'input_cards') , 'input_cards',
                         '--copyToLocal', exe, remote_exe,
                         '--exe', remote_exe]
 
             exe_args = args.args[:]
-            # Add in RNG seed based on job index
-            exe_args.extend(['--seed', str(job_ind)])
+            exe_args.extend(['--seed', str(job_ind)])  # Add in RNG seed based on job index
 
             # Sort out output files. Ensure that they have the seed appended to
             # filename, and that they will be copied to hdfs afterwards.
