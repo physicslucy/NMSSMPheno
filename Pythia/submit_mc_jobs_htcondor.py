@@ -75,7 +75,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     args = parser.parse_args(args=in_args)
 
     if args.v:
-        logging.setLevel(logging.DEBUG)
+        log.setLevel(logging.DEBUG)
 
     log.debug(args)
 
