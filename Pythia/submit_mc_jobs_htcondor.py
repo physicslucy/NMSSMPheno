@@ -42,23 +42,24 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     parser.add_argument("jobIdRange",
                         help="Specify job ID range to run over. The ID is used"
                         " as the random number generator seed, so manual "
-                        "control is needed to avoid making the same files."
+                        "control is needed to avoid making the same files. "
                         "Must be of the form: startID, endID. ",
-                        nargs=2, type=int)
+                        nargs=2, type=int)  # no metavar, bug with positional args
     parser.add_argument("--oDir",
                         help="Directory for output HepMC files. "
                         "If no directory is specified, an automatic one will "
                         "be created at: "
-                        "/scratch/<username>/NMSSMPheno/Pythia8/<card>/<date>",
+                        "/hdfs/user/<username>/NMSSMPheno/Pythia8/<card>/<date>",
                         default="")
     parser.add_argument("--exe",
                         help="Executable to run.",
                         default="generateMC.exe")
-    # parser.add_argument("--massRange",
-    #                     help="Specify mass range to run over. "
-    #                     "Must be of the form: startMass, endMass, massGap. "
-    #                     "For each mass point, njobs jobs will be submitted.",
-    #                     nargs=3, type=float)
+    parser.add_argument("--massRange",
+                        help="Specify mass range to run over. "
+                        "Must be of the form: startMass, endMass, massStep. "
+                        "For each mass point, njobs jobs will be submitted. "
+                        "This will superseed any --mass option passed via --args",
+                        nargs=3, type=float, metavar=('startMass', 'endMass', 'massStep'))
     # All other program arguments to pass to program directly.
     parser.add_argument("--args",
                         help="All other program arguments. "
@@ -87,18 +88,18 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     card = get_option_in_args(args.args, "--card")
     if not os.path.isfile(card):
         raise RuntimeError('Input card %s does not exist!' % card)
-    channel = os.path.splitext(os.path.basename(card))[0]
+    args.channel = os.path.splitext(os.path.basename(card))[0]
 
     # Auto generate output directory if necessary
     # -------------------------------------------------------------------------
     if args.oDir == "":
-        args.oDir = generate_dir_soolin(channel)
+        args.oDir = generate_dir_soolin(args.channel)
 
     checkCreateDir(args.oDir, args.v)
 
     # Setup log directory
     # -------------------------------------------------------------------------
-    log_dir = '%s/logs' % generate_subdir(channel)
+    log_dir = '%s/logs' % generate_subdir(args.channel)
     checkCreateDir(log_dir, args.v)
 
     # Copy executable to outputdir to sandbox it
@@ -106,60 +107,41 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     sandbox_exe = os.path.join(args.oDir, os.path.basename(args.exe))
     shutil.copy2(args.exe, sandbox_exe)
 
-    # File stem common for all condor, dag, status files
+    # Loop over required mass(es), generating DAG files for each
     # -------------------------------------------------------------------------
-    mass = get_option_in_args(args.args, '--mass')
-    file_stem = '%s/ma%s_%s' % (generate_subdir(channel),
-                                         mass, strftime("%H%M%S"))
-    checkCreateDir(os.path.dirname(file_stem), args.v)
+    if args.massRange:
+        masses = frange(args.massRange[0], args.massRange[1], args.massRange[2])
+    else:
+        masses = [get_option_in_args(args.args, '--mass')]
 
-    # Make a condor job file for this batch using the template
-    script_name = file_stem + '.condor'
-    write_condor_file(condor_filename=script_name,
-                      log_dir=log_dir, log_file='$(JOB)')
+    for mass in masses:
+        # File stem common for all dag and status files
+        # -------------------------------------------------------------------------
+        mass_str = '%g' % mass if isinstance(mass, float) else str(mass)
+        file_stem = '%s/ma%s_%s' % (generate_subdir(args.channel),
+                                    mass_str, strftime("%H%M%S"))
+        checkCreateDir(os.path.dirname(file_stem), args.v)
 
-    # Make DAG file
-    # -------------------------------------------------------------------------
-    dag_name = file_stem + '.dag'
-    status_name = file_stem + '.status'
-    write_dag_file(dag_filename=dag_name, condor_filename=script_name,
-                   status_filename=status_name, exe=sandbox_exe,
-                   channel=channel, mass=mass, args=args)
+        # Make DAG file
+        # -------------------------------------------------------------------------
+        dag_name = file_stem + '.dag'
+        status_name = file_stem + '.status'
+        write_dag_file(dag_filename=dag_name, condor_filename='HTCondor/mcJob.condor',
+                       status_filename=status_name, exe=sandbox_exe,
+                       log_dir=log_dir,
+                       mass=mass_str, args=args)
 
-    # Submit it
-    # -------------------------------------------------------------------------
-    if not args.dry:
-        call(['condor_submit_dag', dag_name])
-        log.info('Check status with:')
-        log.info('DAGstatus.py %s' % status_name)
-        print ''
-        log.info('Condor log files written to: %s' % log_dir)
-
-
-def write_condor_file(condor_filename, log_dir, log_file):
-    """Write condor job file using a template.
-
-    log_dir: str
-        Directory for log files
-    log_file: str
-        Filename stem for log files. Note that the complete log filename will
-        be $(cluster).$(process).<log_file>.[out|err|log]
-    condor_filename: str
-        Name of condor job file to be produced
-    """
-    with open('HTCondor/mcJob.condor', 'r') as template:
-        job_template = template.read()
-
-    job_description = job_template.replace('SEDLOGDIR', log_dir)
-    job_description = job_description.replace('SEDLOGFILE', log_file)
-
-    log.info('Condor job file: %s', condor_filename)
-    with open(condor_filename, 'w') as job_file:
-        job_file.write(job_description)
+        # Submit it
+        # -------------------------------------------------------------------------
+        if not args.dry:
+            call(['condor_submit_dag', dag_name])
+            log.info('Check status with:')
+            log.info('DAGstatus.py %s' % status_name)
+            print ''
+            log.info('Condor log files written to: %s' % log_dir)
 
 
-def write_dag_file(dag_filename, condor_filename, status_filename,
-                   exe, channel, mass, args):
+def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe, mass, args):
     """Write a DAG file for a set of jobs.
 
     Creates a DAG file, adding extra flags for the worker node script.
@@ -174,35 +156,38 @@ def write_dag_file(dag_filename, condor_filename, status_filename,
         Name to be used for DAG status file.
     exe: str
         Location of sandboxed executable to copy accross
-    channel: str
-        Name of channel. Used to auto-generate HepMC filename.
     mass: str
         Mass of a1 boson. Used to auto-generate HepMC filename.
     args: argparse.Namespace
         Contains info about output directory, job IDs, number of events per job,
         and args to pass to the executable.
     """
-    # get number of events to generate
+    # get number of events to generate per job
     if '--number' in args.args:
         n_events = get_option_in_args(args.args, "--number")
     elif '-n' in args.args:
         n_events = get_option_in_args(args.args, "-n")
     else:
-        log.warning('Number of events not specified - assuming 1')
+        log.warning('Number of events per job not specified - assuming 1')
         n_events = 1
+
+    # set mass in args passed to program
+    set_option_in_args(args.args, '--mass', str(mass))
+
+    log.debug(args.args)
 
     log.info("DAG file: %s" % dag_filename)
     with open(dag_filename, 'w') as dag_file:
-        dag_file.write('# DAG for channel %s\n' % channel)
+        dag_file.write('# DAG for channel %s\n' % args.channel)
         dag_file.write('# Outputting to %s\n' % args.oDir)
         for job_ind in xrange(args.jobIdRange[0], args.jobIdRange[1] + 1):
-            job_name = '%d_%s' % (job_ind, channel)
+            job_name = '%d_%s' % (job_ind, args.channel)
             dag_file.write('JOB %s %s\n' % (job_name, condor_filename))
             exe_args = args.args[:]
 
             # Auto generate output filename if necessary
             if "--hepmc" not in exe_args:
-                hepmc_name = "%s_ma1_%s_%s.hepmc" % (channel, mass, n_events)
+                hepmc_name = "%s_ma1_%s_n%s.hepmc" % (args.channel, mass, n_events)
                 exe_args.extend(['--hepmc', hepmc_name])
 
             # Use the filename itself, ignore any directories from user.
@@ -222,7 +207,8 @@ def write_dag_file(dag_filename, condor_filename, status_filename,
             # Add in RNG seed based on job index
             exe_args.extend(['--seed', str(job_ind)])
             job_opts.extend(exe_args)
-            dag_file.write('VARS %s opts="%s"\n' % (job_name, ' '.join(job_opts)))
+            log_name = os.path.splitext(os.path.basename(dag_filename))[0]
+            dag_file.write('VARS %s opts="%s" logdir="%s" logfile="%s"\n' % (job_name, ' '.join(job_opts), log_dir, log_name))
         dag_file.write('NODE_STATUS_FILE %s 30\n' % status_filename)
 
 
@@ -281,6 +267,14 @@ def set_option_in_args(args, flag, value):
     ['--foo', 'ball', '--man', 'bear']
     """
     args[args.index(flag) + 1] = value
+
+
+def frange(start, stop, step=1.0):
+    """Generate an iterator to loop over a range of floats."""
+    i = start
+    while i <= stop:
+        yield i
+        i += step
 
 
 if __name__ == "__main__":

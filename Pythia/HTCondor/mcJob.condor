@@ -2,9 +2,9 @@
 
 Executable = HTCondor/mcJob.py
 Universe = vanilla
-Output = SEDLOGDIR/$(cluster).$(process).SEDLOGFILE.out
-Error = SEDLOGDIR/$(cluster).$(process).SEDLOGFILE.err
-Log = SEDLOGDIR/$(cluster).$(process).SEDLOGFILE.log
+Output = $(logdir)/$(logfile).$(cluster).$(process).out
+Error = $(logdir)/$(logfile).$(cluster).$(process).err
+Log = $(logdir)/$(logfile).$(cluster).$(process).log
 when_to_transfer_output = ON_EXIT_OR_EVICT
 
 request_cpus = 1
