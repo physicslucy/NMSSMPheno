@@ -52,7 +52,7 @@ class PythiaProgramOpts
      * @brief Generate a filename stem.
      * @details <channel>_ma1_<mass>_n<number of events>_seed<seed>
      */
-    std::string generateFilename();
+    std::string generateFilenameStem();
 
   private:
     /**

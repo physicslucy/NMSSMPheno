@@ -95,7 +95,7 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
     writeToHEPMC_ = true;
     // Generate default filename if necessary
     if (filenameHEPMC_ == "") {
-      filenameHEPMC_ = generateFilename() + ".hepmc";
+      filenameHEPMC_ = generateFilenameStem() + ".hepmc";
     }
     // Check if there's already an extension on filename, if not add one
     if(!PythiaProgramOpts::checkExtension(filenameHEPMC_, ".hepmc")) {
@@ -107,7 +107,7 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
     writeToLHE_ = true;
     // Generate default filename if necessary
     if (filenameLHE_ == "") {
-      filenameLHE_ = generateFilename() + ".lhe";
+      filenameLHE_ = generateFilenameStem() + ".lhe";
     }
     // Check if there's already an extension on filename, if not add one
     if(!PythiaProgramOpts::checkExtension(filenameLHE_, ".lhe")) {
@@ -119,7 +119,7 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
     writeToROOT_ = true;
     // Generate default filename if necessary
     if (filenameROOT_ == "") {
-      filenameROOT_ = generateFilename() + ".root";
+      filenameROOT_ = generateFilenameStem() + ".root";
     }
     // Check if there's already an extension on filename, if not add one
     if(!PythiaProgramOpts::checkExtension(filenameROOT_, ".root")) {
@@ -152,7 +152,7 @@ void PythiaProgramOpts::printProgramOptions() {
 }
 
 
-std::string PythiaProgramOpts::generateFilename() {
+std::string PythiaProgramOpts::generateFilenameStem() {
   std::string channel = fs::path(cardName_).stem().string();
   return channel + "_ma1_" + lexical_cast<std::string>(mass_) + "_n" +
     lexical_cast<std::string>(nEvents_) + "_seed" + lexical_cast<std::string>(seed_);

@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 
   // Text file to write progress - handy for monitoring during jobs
   ofstream progressFile;
-  std::string stem = opts.generateFilename();
+  std::string stem = opts.generateFilenameStem();
   progressFile.open(stem + "_progress.txt");
 
   //---------------------------------------------------------------------------
