@@ -48,7 +48,7 @@ endif
 
 # Other common flags
 # -------------------------------------------------
-CXX_COMMON = -std=c++11 -O2 -pthread -D_USE_XOPEN2K8 -Wall -Wextra -Wshadow -pedantic-errors
+CXX_COMMON = -std=c++11 -O2 -D_USE_XOPEN2K8 -Wall -Wextra -Wshadow -pedantic-errors
 BOOST_LIBS = -lboost_system -lboost_filesystem -lboost_program_options -lboost_iostreams
 
 # `$(FASTJETDIR)/bin/fastjet-config --cxxflags --plugins` \
@@ -56,8 +56,8 @@ BOOST_LIBS = -lboost_system -lboost_filesystem -lboost_program_options -lboost_i
 
 # Make using `make`
 # For pythia 8.2X
-generateMC: RootHistManager.o
-	$(CXX) $(SRCDIR)/$@.cc $(PYTHIA8DIR)/$(LIBDIR)/libpythia8.a $(OBJDIR)/RootHistManager.o -o $@.exe \
+generateMC.exe: $(SRCDIR)/generateMC.cc $(OBJDIR)/RootHistManager.o $(OBJDIR)/PythiaProgramOpts.o
+	$(CXX) $< $(PYTHIA8DIR)/$(LIBDIR)/libpythia8.a $(OBJDIR)/RootHistManager.o $(OBJDIR)/PythiaProgramOpts.o -o $@ \
 	-I`$(ROOTDIR)/$(BINDIR)/root-config --incdir` \
 	-isystem $(BOOSTDIR_INC) \
 	-I$(HEPMCDIR)/$(INCDIR) \
@@ -69,9 +69,13 @@ generateMC: RootHistManager.o
 	-L$(HEPMCDIR)/$(LIBDIR) -Wl,-rpath $(HEPMCDIR)/$(LIBDIR) -lHepMC \
 	`$(ROOTDIR)/$(BINDIR)/root-config --libs` \
 
-RootHistManager.o: $(SRCDIR)/RootHistManager.cc $(INCDIR)/RootHistManager.h
+$(OBJDIR)/PythiaProgramOpts.o: $(SRCDIR)/PythiaProgramOpts.cc $(INCDIR)/PythiaProgramOpts.h
 	@if test ! -d $(OBJDIR); then mkdir $(OBJDIR); else : ; fi
-	$(CXX) -c $< -o $(OBJDIR)/$@ -I./$(INCDIR) -I$(ROOTDIR)/$(INCDIR) $(CXX_COMMON)
+	$(CXX) -c $< -o $@ -I./$(INCDIR) -isystem $(BOOSTDIR_INC) $(CXX_COMMON)
+
+$(OBJDIR)/RootHistManager.o: $(SRCDIR)/RootHistManager.cc $(INCDIR)/RootHistManager.h
+	@if test ! -d $(OBJDIR); then mkdir $(OBJDIR); else : ; fi
+	$(CXX) -c $< -o $@ -I./$(INCDIR) -I$(ROOTDIR)/$(INCDIR) $(CXX_COMMON)
 
 # Clean up: remove executables and outdated files.
 .PHONY: clean

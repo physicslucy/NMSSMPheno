@@ -12,6 +12,11 @@
 #include "TH1.h"
 #include "TFile.h"
 
+// BOOST headers
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
+
 // Own headers
 #include "PythiaProgramOpts.h"
 #include "RootHistManager.h"
