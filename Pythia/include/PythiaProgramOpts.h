@@ -93,12 +93,13 @@ class PythiaProgramOpts
         printOptionError(e, "Error in program_options", desc);
       }
 
-      po::notify(vm);
-
+      // put this before po::notify otherwise error thrown when just using --help
       if (vm.count("help")) {
         cout << desc << endl;
         exit(1);
       }
+
+      po::notify(vm);
 
       // Check input card exists
       if (!fs::exists(fs::path(cardName_))) {
