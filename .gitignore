@@ -14,6 +14,11 @@
 *.o
 *.lhe
 *.dag.*
+*_progress.txt
+
+py.py
+--auto
+
 pp13_bb/
 pp13_tt/
 test_bb
