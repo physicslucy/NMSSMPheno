@@ -14,5 +14,7 @@
 *.o
 *.lhe
 *.dag.*
-
+pp13_bb/
+pp13_tt/
+test_bb
 logs/
