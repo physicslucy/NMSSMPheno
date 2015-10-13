@@ -58,7 +58,7 @@ For example, submitting 3 jobs, each of 10k events, using the [ggh125_2a_4tau.cm
 --args --card input_cards/ggh125_2a_4tau.cmnd -n 10000 --hepmc --root
 ```
 
-This will take approximately 10 minutes.
+This will take approximately 10 minutes. The resultant HepMC file will be ~ 1.9 GB in size.
 
 ##Apply detector simulation
 
