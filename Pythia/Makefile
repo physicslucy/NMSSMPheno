@@ -1,5 +1,5 @@
 # Makefile for compiling Pythia programs with necessary linking to libraries
-# Compile programs using e.g. `make generateMC`
+# Compile programs using `make`
 
 # Automatically handles different systems (e.g. using CMSSW on soolin)
 # The user should check the location of the various programs.
@@ -56,18 +56,24 @@ BOOST_LIBS = -lboost_system -lboost_filesystem -lboost_program_options -lboost_i
 
 # Make using `make`
 # For pythia 8.2X
-generateMC.exe: $(SRCDIR)/generateMC.cc $(OBJDIR)/RootHistManager.o $(OBJDIR)/PythiaProgramOpts.o
-	$(CXX) $< $(PYTHIA8DIR)/$(LIBDIR)/libpythia8.a $(OBJDIR)/RootHistManager.o $(OBJDIR)/PythiaProgramOpts.o -o $@ \
-	-I`$(ROOTDIR)/$(BINDIR)/root-config --incdir` \
-	-isystem $(BOOSTDIR_INC) \
-	-I$(HEPMCDIR)/$(INCDIR) \
-	-I$(PYTHIA8DIR)/$(INCDIR) \
-	-I./include $(CXX_COMMON) \
+generateMC.exe: $(OBJDIR)/generateMC.o $(OBJDIR)/RootHistManager.o $(OBJDIR)/PythiaProgramOpts.o
+	$(CXX) $^ -o $@ \
+	$(PYTHIA8DIR)/$(LIBDIR)/libpythia8.a \
+	$(CXX_COMMON) \
 	-L./ -Wl,-rpath ./ \
 	-L$(PYTHIA8DIR)/$(LIBDIR) -Wl,-rpath $(PYTHIA8DIR)/$(LIBDIR) \
 	-L$(BOOSTDIR_LIB) $(BOOST_LIBS) \
 	-L$(HEPMCDIR)/$(LIBDIR) -Wl,-rpath $(HEPMCDIR)/$(LIBDIR) -lHepMC \
 	`$(ROOTDIR)/$(BINDIR)/root-config --libs` \
+
+$(OBJDIR)/generateMC.o: $(SRCDIR)/generateMC.cc
+	@if test ! -d $(OBJDIR); then mkdir $(OBJDIR); else : ; fi
+	$(CXX) -c $< -o $@ 	\
+	-I`$(ROOTDIR)/$(BINDIR)/root-config --incdir` \
+	-isystem $(BOOSTDIR_INC) \
+	-I$(HEPMCDIR)/$(INCDIR) \
+	-I$(PYTHIA8DIR)/$(INCDIR) \
+	-I./include $(CXX_COMMON)
 
 $(OBJDIR)/PythiaProgramOpts.o: $(SRCDIR)/PythiaProgramOpts.cc $(INCDIR)/PythiaProgramOpts.h
 	@if test ! -d $(OBJDIR); then mkdir $(OBJDIR); else : ; fi
