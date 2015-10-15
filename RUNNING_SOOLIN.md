@@ -43,11 +43,11 @@ See a list of options by using the `--help` flag. **As a minimum** you will need
 
 - `--hepmc`: saves the **complete event listing (including hadronisation)** in HepMC format. Suitable for passing to Delphes.
 - `--lhe`: saves the **hard process only** in LHE format. Suitable for passing to another MC program to hadronise, or to study the hard event itself.
-- `--root`: saves user-defined histograms to a ROOT file. The user must define the histogram objects, and can then fill them by analysing the Pythia event object. This is done in [generateMC.cc](Pythia/src/generateMC.cc).
+- `--root`: saves user-defined histograms to a ROOT file. The user must define the histogram objects, and can then fill them by analysing the Pythia event object. This is done in [generateMC.cc](Pythia/src/generateMC.cc). An example of quick plot-making is done in [deltaR_studies](Pythia/deltaR_studies).
 
 ####Running batch jobs on HTCondor
 
-Use the script [submit_mc_jobs_htcondor.py](Pythia/submit_mc_jobs_htcondor.py). Show possible option using the `--help` flag. **As a minimum** you will need to specify the range of job IDs to run over. The job ID is also the random number seed, so you must ensure that they differ. There are also optional arguments for specifying output directory, using a different executable, etc. You can also pass the options that `generateMC.exe` uses by using the `--args` flag. You must specify, as a minimum, the input card, and mass of a1 (if you are not using the `--massRange` option). Each job will generate the same number of events, as specified using the `-n|--number` flag.
+Use the script [submit_py8_jobs_htcondor.py](Pythia/submit_py8_jobs_htcondor.py). Show possible option using the `--help` flag. **As a minimum** you will need to specify the range of job IDs to run over. The job ID is also the random number seed, so you must ensure that they differ. There are also optional arguments for specifying output directory, using a different executable, etc. You can also pass the options that `generateMC.exe` uses by using the `--args` flag. You must specify, as a minimum, the input card, and mass of a1 (if you are not using the `--massRange` option). Each job will generate the same number of events, as specified using the `-n|--number` flag.
 
 There is also the option of submitting jobs for a range of a1 masses. This is accomplished by using the `--massRange` flag and providing the start/end masses, and the mass interval. For each mass point, jobs with the job IDs specified will be submitted.
 
