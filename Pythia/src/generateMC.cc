@@ -92,13 +92,13 @@ int main(int argc, char *argv[]) {
   // SETUP ROOT FILES/HISTOGRAMS
   //---------------------------------------------------------------------------
   RootHistManager histMan(opts.writeToROOT());
-  histMan.addHist(new TH1F("hPt","h pT", 150, 0, 150));
+  histMan.addHist(new TH1F("hPt","h pT", 300, 0, 300));
   histMan.addHist(new TH1F("a1Pt","a1 pT", 400, 0, 400));
   histMan.addHist(new TH1F("a1Eta","a1 pseudorapidity", 500, -5, 5));
   histMan.addHist(new TH1F("a1Dr","a1 DeltaR", 500, 0, 5));
   histMan.addHist(new TH1F("a1DecayDr","a1 decay products DeltaR", 500, 0, 5));
-  histMan.addHist(new TH1F("a1DecayPt","a1 decay products pT", 200, 0, 100));
-  histMan.addHist(new TH1F("a1MuPt","a1 -> tau -> mu pT", 200, 0, 100));
+  histMan.addHist(new TH1F("a1DecayPt","a1 decay products pT", 400, 0, 400));
+  histMan.addHist(new TH1F("a1MuPt","a1 -> tau -> mu pT", 300, 0, 150));
   histMan.addHist(new TH1F("a1MuEta","a1 -> tau -> mu eta", 500, -5, 5));
 
   //---------------------------------------------------------------------------
