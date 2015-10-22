@@ -27,6 +27,7 @@ using boost::lexical_cast;
 using namespace Pythia8;
 
 // Forward declare methods
+std::vector<Particle*> getChildren(Event & event, Particle * p);
 std::string getCurrentTime();
 
 /**
@@ -144,13 +145,8 @@ int main(int argc, char *argv[]) {
         histMan.fillTH1("hPt", pythia.event[i].pT());
         histMan.fillTH1("a1Dr", REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
 
-        // now find all the a1s
-        std::vector<Particle*> a1s;
-        for (int d = d1; d <= d2; ++d) {
-          if (pythia.event[d].id() == 36) {
-            a1s.push_back(&pythia.event[d]);
-          }
-        }
+        // now find all the h1 children (e.g. a1)
+        std::vector<Particle*> a1s = getChildren(event, &h1);
 
         // now plot a1 variables, and plot its decay products
         for (auto & a1 : a1s) {
@@ -224,6 +220,23 @@ int main(int argc, char *argv[]) {
     myLHA.closeLHEF(true);
   }
 
+}
+
+
+/**
+ * @brief Return vector of Particle pointers to 'children' of the particle.
+ *
+ * @param event Pythia8::Event object holding particle listings
+ * @param p Particle to get children.
+ *
+ * @return
+ */
+std::vector<Particle*> getChildren(Event & event, Particle * p) {
+  std::vector<Particle*> children;
+  for (int child = p->daughter1(); child <= p->daughter2(); ++child) {
+    children.push_back(&event[child]);
+  }
+  return children;
 }
 
 
