@@ -97,6 +97,9 @@ int main(int argc, char *argv[]) {
   histMan.addHist(new TH1F("a1Eta","a1 pseudorapidity", 500, -5, 5));
   histMan.addHist(new TH1F("a1Dr","a1 DeltaR", 500, 0, 5));
   histMan.addHist(new TH1F("a1DecayDr","a1 decay products DeltaR", 500, 0, 5));
+  histMan.addHist(new TH1F("a1DecayPt","a1 decay products pT", 200, 0, 100));
+  histMan.addHist(new TH1F("a1MuPt","a1 -> tau -> mu pT", 200, 0, 100));
+  histMan.addHist(new TH1F("a1MuEta","a1 -> tau -> mu eta", 500, -5, 5));
 
   //---------------------------------------------------------------------------
   // GENERATE EVENTS
@@ -127,28 +130,32 @@ int main(int argc, char *argv[]) {
     //-------------------------------------------------------------------------
     bool donePlots = false;
 
+    Event & event = pythia.event;
+
     // find h decay products and look at separation
-    for (int i = 0; i < pythia.event.size(); ++i) {
+    for (int i = 0; i < event.size(); ++i) {
       if (donePlots) break; // skip the rest of the event listing, we're done
 
+
       // look at h1, its daughters (a1), and their daughters (tau, b, etc)
-      if (abs(pythia.event[i].id()) == 25 && pythia.event[i].status() == -62) {
+      if (abs(event[i].id()) == 25 && event[i].status() == -62) {
+        Particle & h1 = event[i];
 
         // plot h1 variables
-        hPt.fill(pythia.event[i].pT());
+        hPt.fill(h1.pT());
 
-        int d1 = pythia.event[i].daughter1();
-        int d2 = pythia.event[i].daughter2();
-        a1DR.fill(REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
-        a1DPhi.fill(phi(pythia.event[d1].p(), pythia.event[d2].p()));
+        int d1 = h1.daughter1();
+        int d2 = h1.daughter2();
+        a1DR.fill(REtaPhi(event[d1].p(), event[d2].p()));
+        a1DPhi.fill(phi(event[d1].p(), event[d2].p()));
 
-        histMan.fillTH1("hPt", pythia.event[i].pT());
-        histMan.fillTH1("a1Dr", REtaPhi(pythia.event[d1].p(), pythia.event[d2].p()));
+        histMan.fillTH1("hPt", h1.pT());
+        histMan.fillTH1("a1Dr", REtaPhi(event[d1].p(), event[d2].p()));
 
         // now find all the h1 children (e.g. a1)
         std::vector<Particle*> a1s = getChildren(event, &h1);
 
-        // now plot a1 variables, and plot its decay products
+        // now plot child variables, and its decay products
         for (auto & a1 : a1s) {
           a1Eta.fill(a1->eta());
           a1Pt.fill(a1->pT());
@@ -156,11 +163,30 @@ int main(int argc, char *argv[]) {
           histMan.fillTH1("a1Eta", a1->eta());
 
           // look at a1 daughter particles
-          Vec4 daughter1Mom = pythia.event[a1->daughter1()].p();
-          Vec4 daughter2Mom = pythia.event[a1->daughter2()].p();
+          Vec4 daughter1Mom = event[a1->daughter1()].p();
+          Vec4 daughter2Mom = event[a1->daughter2()].p();
           a1DecayDR.fill(REtaPhi(daughter1Mom, daughter2Mom));
           a1DecayDPhi.fill(phi(daughter1Mom, daughter2Mom));
           histMan.fillTH1("a1DecayDr", REtaPhi(daughter1Mom, daughter2Mom));
+          histMan.fillTH1("a1DecayPt", daughter1Mom.pT());
+          histMan.fillTH1("a1DecayPt", daughter2Mom.pT());
+
+          // find all grandchildren of the a1 e.g. a1 -> tau+tau -> mu+nu+nu+x+y+z
+          std::vector<Particle*> a1Children = getChildren(event, a1);
+          std::vector<Particle*> a1Grandchildren;
+          for (auto & p : a1Children) {
+            auto gc = getChildren(event, p);
+            a1Grandchildren.insert(a1Grandchildren.end(), gc.begin(), gc.end());
+          }
+
+          // plot info about grandchildren
+          for (auto & gc : a1Grandchildren) {
+            if (abs(gc->id()) == 13) {
+              histMan.fillTH1("a1MuPt", gc->pT());
+              histMan.fillTH1("a1MuEta", gc->eta());
+            }
+          }
+
         }
         donePlots = true;
       }
