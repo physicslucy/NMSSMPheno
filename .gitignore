@@ -15,6 +15,7 @@
 *.lhe
 *.dag.*
 *_progress.txt
+*.pdf
 
 py.py
 --auto
