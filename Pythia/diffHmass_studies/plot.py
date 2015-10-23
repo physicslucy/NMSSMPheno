@@ -26,14 +26,15 @@ f_h300_ma8 = dict(file=ROOT.TFile('ggh300_2a_4tau_ma1_8_n50000.root'),
                   label='m_{H} = 300 GeV, m_{a} = 8 GeV',
                   color=ROOT.kGreen+3)
 
-hist_names = {"hPt": dict(xtitle='H p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau', rebin=4, xlim=None),
-              "a1Pt": dict(xtitle='a_{1} p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau', rebin=4, xlim=None),
-              "a1Eta": dict(xtitle='a_{1} #eta', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau', rebin=10, xlim=None),
-              "a1Dr": dict(xtitle='#DeltaR(a_{1}, a_{1})', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau', rebin=10, xlim=None),
-              "a1DecayDr": dict(xtitle='#DeltaR(#tau, #tau)', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau', rebin=1, xlim=[0, 0.5]),
-              "a1DecayPt": dict(xtitle='#tau p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau', rebin=4, xlim=[0, 300]),
-              "a1MuPt": dict(xtitle='#mu_{#tau} p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau', rebin=4, xlim=None),
-              "a1MuEta": dict(xtitle='#mu_{#tau} #eta', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau', rebin=10, xlim=None),
+hist_names = {"hPt": dict(xtitle='H p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=4, xlim=None),
+              "a1Pt": dict(xtitle='a_{1} p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=4, xlim=None),
+              "a1Eta": dict(xtitle='a_{1} #eta', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=10, xlim=None),
+              "a1Dr": dict(xtitle='#DeltaR(a_{1}, a_{1})', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=10, xlim=None),
+              "a1DecayDr": dict(xtitle='#DeltaR(#tau, #tau)', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=1, xlim=[0, 0.5]),
+              "a1DecayPt": dict(xtitle='#tau p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=4, xlim=[0, 300]),
+              "a1DecayEta": dict(xtitle='#tau #eta', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=10, xlim=None),
+              # "a1MuPt": dict(xtitle='#mu_{#tau} p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=4, xlim=None),
+              # "a1MuEta": dict(xtitle='#mu_{#tau} #eta', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=10, xlim=None),
               }
 
 

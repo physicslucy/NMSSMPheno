@@ -96,10 +96,9 @@ int main(int argc, char *argv[]) {
   histMan.addHist(new TH1F("a1Pt","a1 pT", 400, 0, 400));
   histMan.addHist(new TH1F("a1Eta","a1 pseudorapidity", 500, -5, 5));
   histMan.addHist(new TH1F("a1Dr","a1 DeltaR", 500, 0, 5));
-  histMan.addHist(new TH1F("a1DecayDr","a1 decay products DeltaR", 500, 0, 5));
+  histMan.addHist(new TH1F("a1DecayDr","a1 decay products DeltaR", 1000, 0, 5));
   histMan.addHist(new TH1F("a1DecayPt","a1 decay products pT", 400, 0, 400));
-  histMan.addHist(new TH1F("a1MuPt","a1 -> tau -> mu pT", 300, 0, 150));
-  histMan.addHist(new TH1F("a1MuEta","a1 -> tau -> mu eta", 500, -5, 5));
+  histMan.addHist(new TH1F("a1DecayEta","a1 decay products pseudorapidity", 500, -5, 5));
 
   //---------------------------------------------------------------------------
   // GENERATE EVENTS
@@ -170,23 +169,8 @@ int main(int argc, char *argv[]) {
           histMan.fillTH1("a1DecayDr", REtaPhi(daughter1Mom, daughter2Mom));
           histMan.fillTH1("a1DecayPt", daughter1Mom.pT());
           histMan.fillTH1("a1DecayPt", daughter2Mom.pT());
-
-          // find all grandchildren of the a1 e.g. a1 -> tau+tau -> mu+nu+nu+x+y+z
-          std::vector<Particle*> a1Children = getChildren(event, a1);
-          std::vector<Particle*> a1Grandchildren;
-          for (auto & p : a1Children) {
-            auto gc = getChildren(event, p);
-            a1Grandchildren.insert(a1Grandchildren.end(), gc.begin(), gc.end());
-          }
-
-          // plot info about grandchildren
-          for (auto & gc : a1Grandchildren) {
-            if (abs(gc->id()) == 13) {
-              histMan.fillTH1("a1MuPt", gc->pT());
-              histMan.fillTH1("a1MuEta", gc->eta());
-            }
-          }
-
+          histMan.fillTH1("a1DecayEta", daughter1Mom.eta());
+          histMan.fillTH1("a1DecayEta", daughter2Mom.eta());
         }
         donePlots = true;
       }
