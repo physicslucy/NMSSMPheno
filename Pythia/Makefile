@@ -33,7 +33,7 @@ ifneq ($(findstring cyan, $(shell hostname)), )
 # It took a *LOT* of work to find all the compatible releases/compiler...
 # Change at your own peril!
 else ifneq ($(findstring soolin, $(shell hostname)), )
-	PYTHIA8DIR = $(HOME)/pythia8209
+	PYTHIA8DIR = $(HOME)/Pythia8/pythia8212
 	FASTJETDIR = $(HOME)/fastjet-install
 	# Don't call it HEPMCDIR beacuse it defaults to /build/degano not cvmsfs within cmssw for some stupid reason
 	HEPMCDIR = $(HOME)/HepMC/install
@@ -64,7 +64,7 @@ generateMC.exe: $(OBJDIR)/generateMC.o $(OBJDIR)/RootHistManager.o $(OBJDIR)/Pyt
 	-L$(PYTHIA8DIR)/$(LIBDIR) -Wl,-rpath $(PYTHIA8DIR)/$(LIBDIR) \
 	-L$(BOOSTDIR_LIB) $(BOOST_LIBS) \
 	-L$(HEPMCDIR)/$(LIBDIR) -Wl,-rpath $(HEPMCDIR)/$(LIBDIR) -lHepMC \
-	`$(ROOTDIR)/$(BINDIR)/root-config --libs` \
+	`$(ROOTDIR)/$(BINDIR)/root-config --libs` -lz\
 
 $(OBJDIR)/generateMC.o: $(SRCDIR)/generateMC.cc $(OBJDIR)
 	$(CXX) -c $< -o $@ 	\
