@@ -30,10 +30,6 @@ def main(in_args=sys.argv[1:]):
     args = parser.parse_args(args=in_args)
     print args
 
-    # Set PYTHIA8DATA to avoid version clash
-    # os.environ['PYTHIA8DATA'] = '/users/ra12451/pythia8209/share/Pythia8/xmldoc/'
-    os.environ['PYTHIA8DATA'] = ''
-
     # Make sandbox area to avoid names clashing, and stop auto transfer
     # back to submission node
     # -------------------------------------------------------------------------
