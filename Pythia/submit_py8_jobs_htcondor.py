@@ -141,6 +141,8 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     else:
         masses = [get_option_in_args(args.args, '--mass')]
 
+    status_files = []
+
     for mass in masses:
 
         # File stem common for all dag and status files
@@ -154,6 +156,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
         # -------------------------------------------------------------------------
         dag_name = file_stem + '.dag'
         status_name = file_stem + '.status'
+        status_files.append(status_name)
         write_dag_file(dag_filename=dag_name, condor_filename='HTCondor/mcJob.condor',
                        status_filename=status_name, exe=sandbox_exe,
                        log_dir=log_dir, mass=mass_str, args=args)
@@ -168,6 +171,10 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
             log.info('DAGstatus.py %s' % status_name)
             log.info('Condor log files written to: %s' % log_dir)
             print''
+
+    if len(status_files) > 1:
+        log.info('Check all statuses with:')
+        log.info('DAGstatus.py %s' % ' '.join(status_files))
 
 
 def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe, mass, args):
