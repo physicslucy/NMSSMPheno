@@ -12,6 +12,7 @@
 #include "TH1.h"
 #include "TFile.h"
 #include "TMath.h"
+#include "TTree.h"
 
 // BOOST headers
 #include <boost/algorithm/string.hpp>
@@ -79,39 +80,39 @@ int main(int argc, char *argv[]) {
   progressFile.open(stem + "_progress.txt");
 
   //---------------------------------------------------------------------------
-  // SETUP PYTHIA HISTOGRAMS
-  // very quick n basic, designed for sanity check after running
+  // SETUP ROOT TREES/HISTOGRAMS
   //---------------------------------------------------------------------------
-  Hist hPt("h transverse momentum", 40, 0, 200);
-  Hist a1DR("a1 separation deltaR", 100, 0, 5);
-  Hist a1DPhi("a1 separation deltaPhi", 31, 0, 3.1);
-  Hist a1Eta("a1 pseudorapidity", 100, -5, 5);
-  Hist a1Pt("a1 transverse momentum", 80, 0, 400);
-  Hist a1DecayDR("a1 decay product separation deltaR", 100, 0, 5);
-  Hist a1DecayDPhi("a1 decay product separation deltaPhi", 31, 0, 3.1);
-
-  //---------------------------------------------------------------------------
-  // SETUP ROOT FILES/HISTOGRAMS
-  //---------------------------------------------------------------------------
-  RootHistManager histMan(opts.writeToROOT());
-  // h1 plots
-  histMan.addHist(new TH1F("hPt","h pT", 300, 0, 300));
-  histMan.addHist(new TH1F("hEta","h pseudorapidity", 500, -5, 5));
-  histMan.addHist(new TH1F("hPhi","h phi", 600, -TMath::Pi(), TMath::Pi()));
-  // h1 decay products plots
-  histMan.addHist(new TH1F("a1Pt","a1 pT", 400, 0, 400));
-  histMan.addHist(new TH1F("a1Eta","a1 pseudorapidity", 500, -5, 5));
-  histMan.addHist(new TH1F("a1Phi","a1 phi", 600, -TMath::Pi(), TMath::Pi()));
-  histMan.addHist(new TH1F("a1Dr","a1 DeltaR", 500, 0, 5));
-  // a1 decay products (e.g. tau-tau) plots
-  histMan.addHist(new TH1F("a1DecayDr","a1 decay products DeltaR", 1000, 0, 5));
-  histMan.addHist(new TH1F("a1DecayPt","a1 decay products pT", 400, 0, 400));
-  histMan.addHist(new TH1F("a1DecayEta","a1 decay products pseudorapidity", 500, -5, 5));
-  histMan.addHist(new TH1F("a1DecayPhi","a1 decay products phi", 600, -TMath::Pi(), TMath::Pi()));
-  // mu from a1 decay with cuts on 2 SS mu
-  histMan.addHist(new TH1F("a1DecayMuPt","mu from a1 decay pT", 400, 0, 400));
-  histMan.addHist(new TH1F("a1DecayMuEta","mu from a1 decay pseudorapidity", 500, -5, 5));
-  histMan.addHist(new TH1F("a1DecayMuPhi","mu from a1 decay phi", 600, -TMath::Pi(), TMath::Pi()));
+  // need different Trees as we fill them at different rates, stop double counting
+  // h1 variables
+  TTree hTree("hVars", "hVars");
+  float hPt(-1.), hEta(99.), hPhi(99.);
+  float a1DPhi(99.), a1Dr(99.);
+  hTree.Branch("hPt", &hPt, "hPt/Float_t");
+  hTree.Branch("hEta", &hEta, "hEta/Float_t");
+  hTree.Branch("hPhi", &hPhi, "hPhi/Float_t");
+  hTree.Branch("a1DPhi", &a1DPhi, "a1DPhi/Float_t");
+  hTree.Branch("a1Dr", &a1Dr, "a1Dr/Float_t");
+  // a1 variables
+  TTree a1Tree("a1Vars", "a1Vars");
+  float a1Pt(-1.), a1Eta(99.), a1Phi(99.);
+  float a1DecayDPhi(99.), a1DecayDr(99.);
+  a1Tree.Branch("a1Pt", &a1Pt, "a1Pt/Float_t");
+  a1Tree.Branch("a1Eta", &a1Eta, "a1Eta/Float_t");
+  a1Tree.Branch("a1Phi", &a1Phi, "a1Phi/Float_t");
+  a1Tree.Branch("a1DecayDPhi", &a1DecayDPhi, "a1DecayDPhi/Float_t");
+  a1Tree.Branch("a1DecayDr", &a1DecayDr, "a1DecayDr/Float_t");
+  // vars for a1 decay products (e.g. tau-tau)
+  TTree a1DecayTree("a1DecayVars", "a1DecayVars");
+  float a1DecayPt(-1.), a1DecayEta(99.), a1DecayPhi(99.);
+  a1DecayTree.Branch("a1DecayPt", &a1DecayPt, "a1DecayPt/Float_t");
+  a1DecayTree.Branch("a1DecayEta", &a1DecayEta, "a1DecayEta/Float_t");
+  a1DecayTree.Branch("a1DecayPhi", &a1DecayPhi, "a1DecayPhi/Float_t");
+  // vars for mu from a1 decay with cuts on 2 SS mu
+  TTree a1DecayMuTree("a1DecayMuVars", "a1DecayMuVars");
+  float a1DecayMuPt(-1.), a1DecayMuEta(99.), a1DecayMuPhi(99.);
+  a1DecayMuTree.Branch("a1DecayMuPt", &a1DecayMuPt, "a1DecayMuPt/Float_t");
+  a1DecayMuTree.Branch("a1DecayMuEta", &a1DecayMuEta, "a1DecayMuEta/Float_t");
+  a1DecayMuTree.Branch("a1DecayMuPhi", &a1DecayMuPhi, "a1DecayMuPhi/Float_t");
 
   //---------------------------------------------------------------------------
   // GENERATE EVENTS
@@ -148,54 +149,50 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < event.size(); ++i) {
       if (donePlots) break; // skip the rest of the event listing, we're done
 
-
       // look at h1, its daughters (a1), and their daughters (tau, b, etc)
       if (event[i].idAbs() == 25 && event[i].status() == -62) {
         Particle & h1 = event[i];
 
         // plot h1 variables
-        hPt.fill(h1.pT());
+        hPt = h1.pT();
+        hEta = h1.eta();
+        hPhi = h1.phi();
 
         int d1 = h1.daughter1();
         int d2 = h1.daughter2();
-        a1DR.fill(REtaPhi(event[d1].p(), event[d2].p()));
-        a1DPhi.fill(phi(event[d1].p(), event[d2].p()));
-
-        histMan.fillTH1("hPt", h1.pT());
-        histMan.fillTH1("hEta", h1.eta());
-        histMan.fillTH1("hPhi", h1.phi());
-        histMan.fillTH1("a1Dr", REtaPhi(event[d1].p(), event[d2].p()));
+        a1Dr = REtaPhi(event[d1].p(), event[d2].p());
+        a1DPhi = phi(event[d1].p(), event[d2].p());
+        hTree.Fill();
 
         // now find all the h1 children (e.g. a1)
-        std::vector<Particle*> a1s = getChildren(event, &h1);
-
-        // now plot child variables, and its decay products
-        for (auto & a1 : a1s) {
-          a1Eta.fill(a1->eta());
-          a1Pt.fill(a1->pT());
-          histMan.fillTH1("a1Pt", a1->pT());
-          histMan.fillTH1("a1Eta", a1->eta());
-          histMan.fillTH1("a1Phi", a1->phi());
+        // and plot child variables, and their decay products
+        for (auto & a1Itr : getChildren(event, &h1)) {
+          a1Pt = a1Itr->pT();
+          a1Eta = a1Itr->eta();
+          a1Phi = a1Itr->phi();
 
           // look at a1 daughter particles
-          Vec4 daughter1Mom = event[a1->daughter1()].p();
-          Vec4 daughter2Mom = event[a1->daughter2()].p();
-          a1DecayDR.fill(REtaPhi(daughter1Mom, daughter2Mom));
-          a1DecayDPhi.fill(phi(daughter1Mom, daughter2Mom));
-          histMan.fillTH1("a1DecayDr", REtaPhi(daughter1Mom, daughter2Mom));
-          histMan.fillTH1("a1DecayPt", daughter1Mom.pT());
-          histMan.fillTH1("a1DecayPt", daughter2Mom.pT());
-          histMan.fillTH1("a1DecayEta", daughter1Mom.eta());
-          histMan.fillTH1("a1DecayEta", daughter2Mom.eta());
-          histMan.fillTH1("a1DecayPhi", daughter1Mom.phi());
-          histMan.fillTH1("a1DecayPhi", daughter2Mom.phi());
+          Vec4 daughter1Mom = event[a1Itr->daughter1()].p();
+          if (a1Itr->daughter2() == 0 || a1Itr->daughter2() == a1Itr->daughter1()) {
+            cout << "OH TTS" << endl;
+          }
+          Vec4 daughter2Mom = event[a1Itr->daughter2()].p();
+          a1DecayDr = REtaPhi(daughter1Mom, daughter2Mom);
+          a1DecayDPhi = phi(daughter1Mom, daughter2Mom);
+          a1Tree.Fill();
+
+          for (auto & dItr : getChildren(event, a1Itr)) {
+            a1DecayPt = dItr->pT();
+            a1DecayEta = dItr->eta();
+            a1DecayPhi = dItr->phi();
+            a1DecayTree.Fill();
+          }
         }
 
-        auto h1Descendants = getAllDescendants(event, &h1, true);
         // anlayze the muons in the event. We want 2 SS muons.
         std::vector<Particle*> posMu;
         std::vector<Particle*> negMu;
-        for (auto & itr: h1Descendants) {
+        for (auto & itr : getAllDescendants(event, &h1, true)) {
           if (itr->idAbs() == 13) {
             if (itr->charge() > 0) {
               posMu.push_back(itr);
@@ -213,10 +210,11 @@ int main(int argc, char *argv[]) {
         }
 
         // ...and plot some stuff
-        for (auto & muItr: a1mu) {
-          histMan.fillTH1("a1DecayMuPt", muItr->pT());
-          histMan.fillTH1("a1DecayMuEta", muItr->eta());
-          histMan.fillTH1("a1DecayMuPhi", muItr->phi());
+        for (auto & muItr : a1mu) {
+          a1DecayMuPt = muItr->pT();
+          a1DecayMuEta = muItr->eta();
+          a1DecayMuPhi = muItr->phi();
+          a1DecayMuTree.Fill();
         }
 
         donePlots = true;
@@ -252,20 +250,16 @@ int main(int argc, char *argv[]) {
   //---------------------------------------------------------------------------
   pythia.stat();
 
-  cout << hPt << endl;
-  cout << a1DPhi << endl;
-  cout << a1DR << endl;
-  cout << a1Eta << endl;
-  cout << a1Pt << endl;
-  cout << a1DecayDR << endl;
-  cout << a1DecayDPhi << endl;
-
   //---------------------------------------------------------------------------
   // WRITE ROOT HISTOGRAMS TO FILE & TIDY UP
   //---------------------------------------------------------------------------
   if (opts.writeToROOT()) {
       TFile * outFile = new TFile((opts.filenameROOT()).c_str(), "RECREATE");
-      histMan.write(outFile);
+      // histMan.write(outFile);
+      hTree.Write("", TObject::kOverwrite);
+      a1Tree.Write("", TObject::kOverwrite);
+      a1DecayTree.Write("", TObject::kOverwrite);
+      a1DecayMuTree.Write("", TObject::kOverwrite);
       outFile->Close();
       delete outFile;
   }
