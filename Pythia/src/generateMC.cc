@@ -108,6 +108,10 @@ int main(int argc, char *argv[]) {
   histMan.addHist(new TH1F("a1DecayPt","a1 decay products pT", 400, 0, 400));
   histMan.addHist(new TH1F("a1DecayEta","a1 decay products pseudorapidity", 500, -5, 5));
   histMan.addHist(new TH1F("a1DecayPhi","a1 decay products phi", 600, -TMath::Pi(), TMath::Pi()));
+  // mu from a1 decay with cuts on 2 SS mu
+  histMan.addHist(new TH1F("a1DecayMuPt","mu from a1 decay pT", 400, 0, 400));
+  histMan.addHist(new TH1F("a1DecayMuEta","mu from a1 decay pseudorapidity", 500, -5, 5));
+  histMan.addHist(new TH1F("a1DecayMuPhi","mu from a1 decay phi", 600, -TMath::Pi(), TMath::Pi()));
 
   //---------------------------------------------------------------------------
   // GENERATE EVENTS
@@ -186,6 +190,35 @@ int main(int argc, char *argv[]) {
           histMan.fillTH1("a1DecayPhi", daughter1Mom.phi());
           histMan.fillTH1("a1DecayPhi", daughter2Mom.phi());
         }
+
+        auto h1Descendants = getAllDescendants(event, &h1, true);
+        // anlayze the muons in the event. We want 2 SS muons.
+        std::vector<Particle*> posMu;
+        std::vector<Particle*> negMu;
+        for (auto & itr: h1Descendants) {
+          if (itr->idAbs() == 13) {
+            if (itr->charge() > 0) {
+              posMu.push_back(itr);
+            } else {
+              negMu.push_back(itr);
+            }
+          }
+        }
+        // get whichever charge collection has 2+ muons...
+        std::vector<Particle*> a1mu;
+        if (posMu.size() >= 2) {
+          a1mu = posMu;
+        } else if (negMu.size()) {
+          a1mu = negMu;
+        }
+
+        // ...and plot some stuff
+        for (auto & muItr: a1mu) {
+          histMan.fillTH1("a1DecayMuPt", muItr->pT());
+          histMan.fillTH1("a1DecayMuEta", muItr->eta());
+          histMan.fillTH1("a1DecayMuPhi", muItr->phi());
+        }
+
         donePlots = true;
       }
     }
