@@ -11,6 +11,7 @@
 // ROOT headers
 #include "TH1.h"
 #include "TFile.h"
+#include "TMath.h"
 
 // BOOST headers
 #include <boost/algorithm/string.hpp>
@@ -93,13 +94,20 @@ int main(int argc, char *argv[]) {
   // SETUP ROOT FILES/HISTOGRAMS
   //---------------------------------------------------------------------------
   RootHistManager histMan(opts.writeToROOT());
+  // h1 plots
   histMan.addHist(new TH1F("hPt","h pT", 300, 0, 300));
+  histMan.addHist(new TH1F("hEta","h pseudorapidity", 500, -5, 5));
+  histMan.addHist(new TH1F("hPhi","h phi", 600, -TMath::Pi(), TMath::Pi()));
+  // h1 decay products plots
   histMan.addHist(new TH1F("a1Pt","a1 pT", 400, 0, 400));
   histMan.addHist(new TH1F("a1Eta","a1 pseudorapidity", 500, -5, 5));
+  histMan.addHist(new TH1F("a1Phi","a1 phi", 600, -TMath::Pi(), TMath::Pi()));
   histMan.addHist(new TH1F("a1Dr","a1 DeltaR", 500, 0, 5));
+  // a1 decay products (e.g. tau-tau) plots
   histMan.addHist(new TH1F("a1DecayDr","a1 decay products DeltaR", 1000, 0, 5));
   histMan.addHist(new TH1F("a1DecayPt","a1 decay products pT", 400, 0, 400));
   histMan.addHist(new TH1F("a1DecayEta","a1 decay products pseudorapidity", 500, -5, 5));
+  histMan.addHist(new TH1F("a1DecayPhi","a1 decay products phi", 600, -TMath::Pi(), TMath::Pi()));
 
   //---------------------------------------------------------------------------
   // GENERATE EVENTS
@@ -138,7 +146,7 @@ int main(int argc, char *argv[]) {
 
 
       // look at h1, its daughters (a1), and their daughters (tau, b, etc)
-      if (abs(event[i].id()) == 25 && event[i].status() == -62) {
+      if (event[i].idAbs() == 25 && event[i].status() == -62) {
         Particle & h1 = event[i];
 
         // plot h1 variables
@@ -150,6 +158,8 @@ int main(int argc, char *argv[]) {
         a1DPhi.fill(phi(event[d1].p(), event[d2].p()));
 
         histMan.fillTH1("hPt", h1.pT());
+        histMan.fillTH1("hEta", h1.eta());
+        histMan.fillTH1("hPhi", h1.phi());
         histMan.fillTH1("a1Dr", REtaPhi(event[d1].p(), event[d2].p()));
 
         // now find all the h1 children (e.g. a1)
@@ -161,6 +171,7 @@ int main(int argc, char *argv[]) {
           a1Pt.fill(a1->pT());
           histMan.fillTH1("a1Pt", a1->pT());
           histMan.fillTH1("a1Eta", a1->eta());
+          histMan.fillTH1("a1Phi", a1->phi());
 
           // look at a1 daughter particles
           Vec4 daughter1Mom = event[a1->daughter1()].p();
@@ -172,6 +183,8 @@ int main(int argc, char *argv[]) {
           histMan.fillTH1("a1DecayPt", daughter2Mom.pT());
           histMan.fillTH1("a1DecayEta", daughter1Mom.eta());
           histMan.fillTH1("a1DecayEta", daughter2Mom.eta());
+          histMan.fillTH1("a1DecayPhi", daughter1Mom.phi());
+          histMan.fillTH1("a1DecayPhi", daughter2Mom.phi());
         }
         donePlots = true;
       }
