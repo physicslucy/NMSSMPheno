@@ -28,6 +28,7 @@ using namespace Pythia8;
 
 // Forward declare methods
 std::vector<Particle*> getChildren(Event & event, Particle * p);
+std::vector<Particle*> getAllDescendants(Event & event, Particle * p, bool finalStateOnly);
 std::string getCurrentTime();
 
 /**
@@ -247,6 +248,47 @@ std::vector<Particle*> getChildren(Event & event, Particle * p) {
     children.push_back(&event[child]);
   }
   return children;
+}
+
+
+/**
+ * @brief Get all descendants from a given particle. Iterates through all the
+ * generation of children, until they are all final state (status > 0).
+ *
+ * @param event [description]
+ * @param p Particle to get descendants.
+ * @param finalStateOnly If true, returns only descendants which are final state
+ * (status > 0). Otherwise, returns all intermediate children as well.
+ * @return Returns a vector of Particle*
+ */
+std::vector<Particle*> getAllDescendants(Event & event, Particle * p, bool finalStateOnly) {
+  bool allFinalState = false;
+  std::vector<Particle*> intermediates = {p}; // hold the intermediates
+  std::vector<Particle*> descendants; // hold all the particles to be returned
+  while (!allFinalState) {
+    allFinalState = true;
+    std::vector<Particle*> newIntermediates;
+    for (auto & pItr : intermediates) {
+
+      if (pItr->isFinal()) continue;
+
+      auto kids = getChildren(event, pItr);
+      for (auto & childItr : kids) {
+        if (finalStateOnly) {
+          if (childItr->isFinal()) {
+            descendants.push_back(childItr);
+          }
+        } else {
+          descendants.push_back(childItr);
+        }
+        allFinalState = allFinalState && childItr->isFinal();
+      }
+      newIntermediates.insert(newIntermediates.end(), kids.begin(), kids.end());
+    }
+    intermediates = newIntermediates;
+    newIntermediates.clear(); // prob don't need this, but at least explicit
+  }
+  return descendants;
 }
 
 
