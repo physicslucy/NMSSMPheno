@@ -149,17 +149,19 @@ def plot_compare(file_1, file_2, plot, plot_dir, oFormat='pdf'):
     c.SaveAs('%s/%s.%s' % (plot_dir, plot.var, oFormat))
 
 
-for hist in plots:
+if __name__ == "__main__":
 
-    # plot ma = 4, various mH
-    plot_compare(f_h125_ma4, f_h300_ma4, hist, 'mh125vs300_ma4')
+    for hist in plots:
 
-    # plot ma = 8, various mH
-    plot_compare(f_h125_ma8, f_h300_ma8, hist, 'mh125vs300_ma8')
+        # plot ma = 4, various mH
+        plot_compare(f_h125_ma4, f_h300_ma4, hist, 'mh125vs300_ma4')
 
-    # plot mH = 125, various ma
-    plot_compare(f_h125_ma4, f_h125_ma8, hist, 'mh125_ma4vs8')
+        # plot ma = 8, various mH
+        plot_compare(f_h125_ma8, f_h300_ma8, hist, 'mh125vs300_ma8')
 
-    # plot mH = 300, various ma
-    plot_compare(f_h300_ma4, f_h300_ma8, hist, 'mh300_ma4vs8')
+        # plot mH = 125, various ma
+        plot_compare(f_h125_ma4, f_h125_ma8, hist, 'mh125_ma4vs8')
+
+        # plot mH = 300, various ma
+        plot_compare(f_h300_ma4, f_h300_ma8, hist, 'mh300_ma4vs8')
 
