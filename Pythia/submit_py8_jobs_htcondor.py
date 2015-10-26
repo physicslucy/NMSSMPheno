@@ -49,7 +49,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
                         help="Directory for output HepMC files. "
                         "If no directory is specified, an automatic one will "
                         "be created at: "
-                        "/hdfs/user/<username>/NMSSMPheno/Pythia8/<card>/<date>",
+                        "/hdfs/user/<username>/NMSSMPheno/Pythia8/<energy>TeV/<card>/<date>",
                         default="")
     parser.add_argument("--exe",
                         help="Executable to run.",
@@ -105,10 +105,17 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     args.card = card
     args.channel = os.path.splitext(os.path.basename(card))[0]
 
+    # Get CoM energy
+    # -------------------------------------------------------------------------
+    try:
+        args.energy = int(get_option_in_args(args.args, '--energy'))
+    except KeyError as e:
+        args.energy = 13
+
     # Auto generate output directory if necessary
     # -------------------------------------------------------------------------
     if args.oDir == "":
-        args.oDir = generate_dir_soolin(args.channel)
+        args.oDir = generate_dir_soolin(args.channel, args.energy)
 
     checkCreateDir(args.oDir, args.v)
 
@@ -127,7 +134,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
 
     # Setup log directory
     # -------------------------------------------------------------------------
-    log_dir = '%s/logs' % generate_subdir(args.channel)
+    log_dir = '%s/logs' % generate_subdir(args.channel, args.energy)
     checkCreateDir(log_dir, args.v)
 
     # Loop over required mass(es), generating DAG files for each
@@ -148,7 +155,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
         # File stem common for all dag and status files
         # -------------------------------------------------------------------------
         mass_str = '%g' % mass if isinstance(mass, float) else str(mass)
-        file_stem = '%s/ma%s_%s' % (generate_subdir(args.channel),
+        file_stem = '%s/ma%s_%s' % (generate_subdir(args.channel, args.energy),
                                     mass_str, strftime("%H%M%S"))
         checkCreateDir(os.path.dirname(file_stem), args.v)
 
@@ -247,7 +254,7 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
                     # Auto generate output filename if necessary
                     # Little bit hacky, as we have to manually sync with PythiaProgramOpts.h
                     if not get_option_in_args(args.args, flag):
-                        out_name = "%s_ma1_%s_n%s.%s" % (args.channel, mass, n_events, fmt)
+                        out_name = generate_filename(args.channel, mass, args.energy, n_events, fmt)
                         set_option_in_args(exe_args, flag, out_name)
 
                     # Use the filename itself, ignore any directories from user.
@@ -287,24 +294,29 @@ def checkCreateDir(directory, info=False):
             print "Making dir %s" % directory
 
 
-def generate_subdir(channel):
+def generate_subdir(channel, energy=13):
     """Generate a subdirectory name using channel and date.
     Can be used for output and log files, so consistent between both.
 
-    >>> generate_subdir('ggh_4tau')
-    ggh_4tau/05_Oct_15
+    >>> generate_subdir('ggh_4tau', 8)
+    8TeV/ggh_4tau/05_Oct_15
     """
-    return os.path.join(channel, strftime("%d_%b_%y"))
+    return os.path.join('%dTeV' % energy, channel, strftime("%d_%b_%y"))
 
 
-def generate_dir_soolin(channel):
+def generate_dir_soolin(channel, energy=13):
     """Generate a directory name on Iridis using userId, channel, and date.
 
     >>> generate_dir_iridis('ggh_4tau')
-    /hdfs/user/<username>/NMSSMPheno/Pythia8/ggh_4tau/<date>
+    /hdfs/user/<username>/NMSSMPheno/Pythia8/<energy>TeV/ggh_4tau/<date>
     """
     uid = getpass.getuser()
-    return "/hdfs/user/%s/NMSSMPheno/Pythia8/%s" % (uid, generate_subdir(channel))
+    return "/hdfs/user/%s/NMSSMPheno/Pythia8/%s" % (uid, generate_subdir(channel, energy))
+
+
+def generate_filename(channel, mass, energy, n_events, fmt):
+    """Centralised filename generator using various info"""
+    return "%s_ma1_%s_%dTeV_n%s.%s" % (channel, mass, energy, n_events, fmt)
 
 
 def get_option_in_args(args, flag):

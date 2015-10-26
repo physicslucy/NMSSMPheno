@@ -45,7 +45,8 @@ int main(int argc, char *argv[]) {
   // SETUP PYTHIA
   //---------------------------------------------------------------------------
   Pythia pythia;
-  pythia.readFile("input_cards/common_pp13.cmnd");
+  pythia.readFile("input_cards/common_pp.cmnd");
+  pythia.readString("Beams:eCM = " + lexical_cast<std::string>(opts.energy() * 1000));
   pythia.readFile(opts.cardName());
 
   pythia.readString("Main:numberOfEvents = " + lexical_cast<std::string>(opts.nEvents()));

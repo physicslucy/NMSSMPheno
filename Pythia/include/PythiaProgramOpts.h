@@ -26,6 +26,8 @@ class PythiaProgramOpts
 
     int seed() { return seed_; }
 
+    double energy() { return energy_; }
+
     bool writeToHEPMC() { return writeToHEPMC_; }
 
     std::string filenameHEPMC() { return filenameHEPMC_; }
@@ -80,6 +82,7 @@ class PythiaProgramOpts
     int nEvents_;
     double mass_;
     int seed_;
+    double energy_;
 
     bool writeToHEPMC_;
     std::string filenameHEPMC_;

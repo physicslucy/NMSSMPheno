@@ -15,6 +15,7 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
   nEvents_(1),
   mass_(8.),
   seed_(0),
+  energy_(13),
   writeToHEPMC_(false),
   filenameHEPMC_(""),
   writeToLHE_(false),
@@ -41,6 +42,8 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
       "WARNING: DON'T USE 0 FOR BATCH SYSTEM. " \
       "Get simultaneous start = same seed = same events. " \
       "Set seed explicitly instead (e.g. file number).")
+    ("energy", po::value<double>(&energy_)->default_value(energy_),
+      "Center-of-mass energy (in TeV).")
     ("hepmc", po::value<std::string>(&filenameHEPMC_)->implicit_value(filenameHEPMC_),
       "Save output in HepMC format (includes hadronisation). " \
       "Can optionally take a filename for the HepMC file. "\
@@ -148,13 +151,15 @@ void PythiaProgramOpts::printProgramOptions() {
   cout << "Generating " << nEvents_ << " events" << endl;
   cout << "Random seed: " << seed_ << endl;
   cout << "Mass of a1: " << mass_ << endl;
+  cout << "CoM energy [TeV]: " << energy_ << endl;
   cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 }
 
 
 std::string PythiaProgramOpts::generateFilenameStem() {
   std::string channel = fs::path(cardName_).stem().string();
-  return channel + "_ma1_" + lexical_cast<std::string>(mass_) + "_n" +
+  return channel + "_ma1_" + lexical_cast<std::string>(mass_) + "_" +
+    lexical_cast<std::string>(energy_) + "TeV_n" +
     lexical_cast<std::string>(nEvents_) + "_seed" + lexical_cast<std::string>(seed_);
 }
 
