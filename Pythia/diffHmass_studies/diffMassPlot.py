@@ -14,18 +14,32 @@ ROOT.gStyle.SetLegendBorderSize(0)
 ROOT.TH1.SetDefaultSumw2(True)
 
 # files with TTrees
-f_h125_ma4 = dict(file=ROOT.TFile('ggh125_2a_4tau_ma1_4_n50000.root'),
-                  label='m_{H} = 125 GeV, m_{a} = 4 GeV',
-                  color=ROOT.kBlack)
-f_h125_ma8 = dict(file=ROOT.TFile('ggh125_2a_4tau_ma1_8_n50000.root'),
-                  label='m_{H} = 125 GeV, m_{a} = 8 GeV',
-                  color=ROOT.kBlue)
-f_h300_ma4 = dict(file=ROOT.TFile('ggh300_2a_4tau_ma1_4_n50000.root'),
-                  label='m_{H} = 300 GeV, m_{a} = 4 GeV',
-                  color=ROOT.kRed)
-f_h300_ma8 = dict(file=ROOT.TFile('ggh300_2a_4tau_ma1_8_n50000.root'),
-                  label='m_{H} = 300 GeV, m_{a} = 8 GeV',
-                  color=ROOT.kGreen+3)
+# 8 TeV
+f_h125_ma4_8TeV = dict(file=ROOT.TFile('8TeV/ggh125_2a_4tau_ma1_4_8TeV_n50000.root'),
+                       label='m_{H} = 125 GeV, m_{a} = 4 GeV, #sqrt{s} = 8 TeV',
+                       color=ROOT.kBlack)
+f_h125_ma8_8TeV = dict(file=ROOT.TFile('8TeV/ggh125_2a_4tau_ma1_8_8TeV_n50000.root'),
+                       label='m_{H} = 125 GeV, m_{a} = 8 GeV, #sqrt{s} = 8 TeV',
+                       color=ROOT.kBlue)
+f_h300_ma4_8TeV = dict(file=ROOT.TFile('8TeV/ggh300_2a_4tau_ma1_4_8TeV_n50000.root'),
+                       label='m_{H} = 300 GeV, m_{a} = 4 GeV, #sqrt{s} = 8 TeV',
+                       color=ROOT.kRed)
+f_h300_ma8_8TeV = dict(file=ROOT.TFile('8TeV/ggh300_2a_4tau_ma1_8_8TeV_n50000.root'),
+                       label='m_{H} = 300 GeV, m_{a} = 8 GeV, #sqrt{s} = 8 TeV',
+                       color=ROOT.kGreen+3)
+# 13 TeV
+f_h125_ma4_13TeV = dict(file=ROOT.TFile('13TeV/ggh125_2a_4tau_ma1_4_13TeV_n50000.root'),
+                        label='m_{H} = 125 GeV, m_{a} = 4 GeV, #sqrt{s} = 13 TeV',
+                        color=ROOT.kBlack)
+f_h125_ma8_13TeV = dict(file=ROOT.TFile('13TeV/ggh125_2a_4tau_ma1_8_13TeV_n50000.root'),
+                        label='m_{H} = 125 GeV, m_{a} = 8 GeV, #sqrt{s} = 13 TeV',
+                        color=ROOT.kBlue)
+f_h300_ma4_13TeV = dict(file=ROOT.TFile('13TeV/ggh300_2a_4tau_ma1_4_13TeV_n50000.root'),
+                        label='m_{H} = 300 GeV, m_{a} = 4 GeV, #sqrt{s} = 13 TeV',
+                        color=ROOT.kRed)
+f_h300_ma8_13TeV = dict(file=ROOT.TFile('13TeV/ggh300_2a_4tau_ma1_8_13TeV_n50000.root'),
+                        label='m_{H} = 300 GeV, m_{a} = 8 GeV, #sqrt{s} = 13 TeV',
+                        color=ROOT.kGreen+3)
 
 # Handy structure to hold info about a plot
 Plot = namedtuple('Plot', 'tree var nbins xlim xtitle ytitle title')
@@ -83,7 +97,7 @@ plots = [
          xtitle='#tau #phi [rads]', ytitle='p.d.f.',
          title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
     # vars for mu from a1 decay with cuts on 2 SS mu
-    Plot(tree='a1DecayMuVars', var='a1DecayMuPt', nbins=100, xlim=[0, 400],
+    Plot(tree='a1DecayMuVars', var='a1DecayMuPt', nbins=50, xlim=[0, 100],
          xtitle='#mu_{#tau} p_{T} [GeV]', ytitle='p.d.f.',
          title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level), require #geq 2 SS #mu'),
     Plot(tree='a1DecayMuVars', var='a1DecayMuEta', nbins=eta_nbins, xlim=eta_xlim,
@@ -114,13 +128,12 @@ def plot_compare(file_1, file_2, plot, plot_dir, oFormat='pdf'):
     oFormat: Optional[str]
         Output format for plot files.
     """
-    unique_name = '%s_%s' % (plot_dir, plot.var)
+    unique_name = '%s_%s' % (plot_dir.replace("/", "_"), plot.var)
     c = ROOT.TCanvas("c_%s" % unique_name, '', 800, 600)
     c.SetTicks(1, 1)
 
     hst = ROOT.THStack('hst_%s' % unique_name, plot.title)
-    # have to set plot title here, not below for some stupid reason
-    leg = ROOT.TLegend(0.56, 0.7, 0.85, 0.88)
+    leg = ROOT.TLegend(0.45, 0.7, 0.85, 0.88)
     leg.SetFillStyle(0)
 
     h_title = ';'.join([plot.title, plot.xtitle, plot.ytitle])
@@ -150,18 +163,24 @@ def plot_compare(file_1, file_2, plot, plot_dir, oFormat='pdf'):
 
 
 if __name__ == "__main__":
-
     for hist in plots:
-
+        # 8TeV
         # plot ma = 4, various mH
-        plot_compare(f_h125_ma4, f_h300_ma4, hist, 'mh125vs300_ma4')
-
+        plot_compare(f_h125_ma4_8TeV, f_h300_ma4_8TeV, hist, '8TeV/mh125vs300_ma4')
         # plot ma = 8, various mH
-        plot_compare(f_h125_ma8, f_h300_ma8, hist, 'mh125vs300_ma8')
-
+        plot_compare(f_h125_ma8_8TeV, f_h300_ma8_8TeV, hist, '8TeV/mh125vs300_ma8')
         # plot mH = 125, various ma
-        plot_compare(f_h125_ma4, f_h125_ma8, hist, 'mh125_ma4vs8')
-
+        plot_compare(f_h125_ma4_8TeV, f_h125_ma8_8TeV, hist, '8TeV/mh125_ma4vs8')
         # plot mH = 300, various ma
-        plot_compare(f_h300_ma4, f_h300_ma8, hist, 'mh300_ma4vs8')
+        plot_compare(f_h300_ma4_8TeV, f_h300_ma8_8TeV, hist, '8TeV/mh300_ma4vs8')
+
+        # 13 TeV
+        # plot ma = 4, various mH
+        plot_compare(f_h125_ma4_13TeV, f_h300_ma4_13TeV, hist, '13TeV/mh125vs300_ma4')
+        # plot ma = 8, various mH
+        plot_compare(f_h125_ma8_13TeV, f_h300_ma8_13TeV, hist, '13TeV/mh125vs300_ma8')
+        # plot mH = 125, various ma
+        plot_compare(f_h125_ma4_13TeV, f_h125_ma8_13TeV, hist, '13TeV/mh125_ma4vs8')
+        # plot mH = 300, various ma
+        plot_compare(f_h300_ma4_13TeV, f_h300_ma8_13TeV, hist, '13TeV/mh300_ma4vs8')
 
