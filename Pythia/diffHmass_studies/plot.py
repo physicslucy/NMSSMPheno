@@ -5,6 +5,7 @@ Script to produce plots highlighting effect of changing H mass (125 vs ???)
 
 import ROOT
 import os
+from collections import namedtuple
 
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 ROOT.gStyle.SetOptStat(0)
@@ -12,7 +13,7 @@ ROOT.gROOT.SetBatch(1)
 ROOT.gStyle.SetLegendBorderSize(0)
 ROOT.TH1.SetDefaultSumw2(True)
 
-
+# files with TTrees
 f_h125_ma4 = dict(file=ROOT.TFile('ggh125_2a_4tau_ma1_4_n50000.root'),
                   label='m_{H} = 125 GeV, m_{a} = 4 GeV',
                   color=ROOT.kBlack)
@@ -26,16 +27,72 @@ f_h300_ma8 = dict(file=ROOT.TFile('ggh300_2a_4tau_ma1_8_n50000.root'),
                   label='m_{H} = 300 GeV, m_{a} = 8 GeV',
                   color=ROOT.kGreen+3)
 
-hist_names = {"hPt": dict(xtitle='H p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=4, xlim=None),
-              "a1Pt": dict(xtitle='a_{1} p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=4, xlim=None),
-              "a1Eta": dict(xtitle='a_{1} #eta', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=10, xlim=None),
-              "a1Dr": dict(xtitle='#DeltaR(a_{1}, a_{1})', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=10, xlim=None),
-              "a1DecayDr": dict(xtitle='#DeltaR(#tau, #tau)', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=1, xlim=[0, 0.5]),
-              "a1DecayPt": dict(xtitle='#tau p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=4, xlim=[0, 300]),
-              "a1DecayEta": dict(xtitle='#tau #eta', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=10, xlim=None),
-              # "a1MuPt": dict(xtitle='#mu_{#tau} p_{T} [GeV]', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=4, xlim=None),
-              # "a1MuEta": dict(xtitle='#mu_{#tau} #eta', ytitle='p.d.f.', title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)', rebin=10, xlim=None),
-              }
+# Handy structure to hold info about a plot
+Plot = namedtuple('Plot', 'tree var nbins xlim xtitle ytitle title')
+
+# some common axis limits & binning
+phi_xlim, phi_nbins = [-ROOT.TMath.Pi(), ROOT.TMath.Pi()], 25
+eta_xlim, eta_nbins = [-5, 5], 40
+dphi_xlim, dphi_nbins = [0, ROOT.TMath.Pi()], 50
+dr_xlim, dr_nbins = [0, 2 * ROOT.TMath.Pi()], 50
+dphi_xlim_small, dphi_nbins_small = [0, 0.5], 50
+dr_xlim_small, dr_nbins_small = [0, 0.5], 50
+
+# Declare the plot you wnat here
+plots = [
+    # h1 vars
+    Plot(tree='hVars', var='hPt', nbins=50, xlim=[0, 200],
+         xtitle='H p_{T} [GeV]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    Plot(tree='hVars', var='hEta', nbins=eta_nbins, xlim=eta_xlim,
+         xtitle='H #eta', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    Plot(tree='hVars', var='hPhi', nbins=phi_nbins, xlim=phi_xlim,
+         xtitle='H #phi [rads]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    Plot(tree='hVars', var='a1DPhi', nbins=dphi_nbins, xlim=dphi_xlim,
+         xtitle='#Delta #phi(a_{1}, a_{1}) [rads]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    Plot(tree='hVars', var='a1Dr', nbins=dr_nbins, xlim=dr_xlim,
+         xtitle='#Delta R(a_{1}, a_{1}) [rads]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    # a1 vars
+    Plot(tree='a1Vars', var='a1Pt', nbins=100, xlim=[0, 400],
+         xtitle='a_{1} p_{T} [GeV]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    Plot(tree='a1Vars', var='a1Eta', nbins=eta_nbins, xlim=eta_xlim,
+         xtitle='a_{1} #eta', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    Plot(tree='a1Vars', var='a1Phi', nbins=phi_nbins, xlim=phi_xlim,
+         xtitle='a_{1} #phi [rads]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    Plot(tree='a1Vars', var='a1DecayDPhi', nbins=dphi_nbins_small, xlim=dphi_xlim_small,
+         xtitle='#Delta #phi(#tau, #tau) [rads]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    Plot(tree='a1Vars', var='a1DecayDr', nbins=dr_nbins_small, xlim=dr_xlim_small,
+         xtitle='#Delta R(#tau, #tau)', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    # a1 decay vars (i.e. tau or b)
+    Plot(tree='a1DecayVars', var='a1DecayPt', nbins=100, xlim=[0, 400],
+         xtitle='#tau p_{T} [GeV]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    Plot(tree='a1DecayVars', var='a1DecayEta', nbins=eta_nbins, xlim=eta_xlim,
+         xtitle='#tau #eta', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    Plot(tree='a1DecayVars', var='a1DecayPhi', nbins=phi_nbins, xlim=phi_xlim,
+         xtitle='#tau #phi [rads]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level)'),
+    # vars for mu from a1 decay with cuts on 2 SS mu
+    Plot(tree='a1DecayMuVars', var='a1DecayMuPt', nbins=100, xlim=[0, 400],
+         xtitle='#mu_{#tau} p_{T} [GeV]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level), require #geq 2 SS #mu'),
+    Plot(tree='a1DecayMuVars', var='a1DecayMuEta', nbins=eta_nbins, xlim=eta_xlim,
+         xtitle='#mu_{#tau} #eta', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level), require #geq 2 SS #mu'),
+    Plot(tree='a1DecayMuVars', var='a1DecayMuPhi', nbins=phi_nbins, xlim=phi_xlim,
+         xtitle='#mu_{#tau} #phi [rads]', ytitle='p.d.f.',
+         title='ggH #rightarrow 2a #rightarrow 4#tau (Gen. level), require #geq 2 SS #mu'),
+]
 
 
 def normalise(h):
@@ -43,60 +100,66 @@ def normalise(h):
     h.Scale(1./h.Integral())
 
 
-def plot_compare(file_1, file_2, h_name, h_opts, plot_dir):
+def plot_compare(file_1, file_2, plot, plot_dir, oFormat='pdf'):
     """Plot histogram from file_1 and file_2 on same canvas and save.
 
     file_1, file_2: dict
         Dict of information about files, including filename, label (for legend),
         and color (for histograms).
-    h_name: str
-        Name of histogram in ROOT files to plot. Must be the same in both files.
-    h_opts: dict
-        Dict of information about histogram plotting options, including x & y
-        axis titles, overall titile, rebin value, and x-axis limit (if desired).
+    plot: Plot namedtuple
+        Information about histogram plotting options, including x & y
+        axis titles, overall title, rebin value, and x-axis limit (if desired).
     plot_dir: str
         Directory in which to save plots
+    oFormat: Optional[str]
+        Output format for plot files.
     """
-    c = ROOT.TCanvas("c_%s_%s" % (plot_dir, h_name), '', 800, 600)
+    unique_name = '%s_%s' % (plot_dir, plot.var)
+    c = ROOT.TCanvas("c_%s" % unique_name, '', 800, 600)
     c.SetTicks(1, 1)
 
-    hst = ROOT.THStack('hst_%s_%s' % (plot_dir, h_name), h_opts['title'])
+    hst = ROOT.THStack('hst_%s' % unique_name, plot.title)
     # have to set plot title here, not below for some stupid reason
     leg = ROOT.TLegend(0.56, 0.7, 0.85, 0.88)
     leg.SetFillStyle(0)
 
-    h_1 = file_1['file'].Get(h_name).Clone('%s_%s' % (plot_dir, h_name))
-    h_2 = file_2['file'].Get(h_name).Clone('%s_%s' % (plot_dir, h_name))
-    for h, f in zip([h_1, h_2], [file_1, file_2]):
+    h_title = ';'.join([plot.title, plot.xtitle, plot.ytitle])
+    for i, f in enumerate([file_1, file_2]):
+        # Get required TTree, fill hist
+        tree = f['file'].Get(plot.tree)
+        if not tree:
+            print 'No tree %s in file %s' % (plot.tree, f['file'])
+            exit(1)
+        h_name = '%s_%d' % (unique_name, i)
+        h = ROOT.TH1D(h_name, h_title, plot.nbins, plot.xlim[0], plot.xlim[1])
+        tree.Draw('%s>>%s' % (plot.var, h_name), "", "")
         h.SetLineColor(f['color'])
-        h.Rebin(h_opts['rebin'])
         normalise(h)
         hst.Add(h)
         leg.AddEntry(h, f['label'],"L")
-    hst.Draw('NOSTACK')
+    hst.Draw('NOSTACK HISTE')
     leg.Draw()
     h_draw = hst.GetHistogram()
-    h_draw.SetTitle(';'.join(['', h_opts['xtitle'], h_opts['ytitle']]))
     h_draw.GetXaxis().SetTitleOffset(1.1)
     h_draw.GetYaxis().SetTitleOffset(1.3)
-    if h_opts['xlim']:
-        h_draw.SetAxisRange(h_opts['xlim'][0], h_opts['xlim'][1], 'X')
+    h_draw.SetTitle(h_title)
+    # Save to PDF
     if not os.path.isdir(plot_dir):
         os.makedirs(plot_dir)
-    c.SaveAs('%s/%s.pdf' % (plot_dir, h_name))
+    c.SaveAs('%s/%s.%s' % (plot_dir, plot.var, oFormat))
 
 
-for h_name, h_opts in hist_names.iteritems():
+for hist in plots:
 
     # plot ma = 4, various mH
-    plot_compare(f_h125_ma4, f_h300_ma4, h_name, h_opts, 'mh125vs300_ma4')
+    plot_compare(f_h125_ma4, f_h300_ma4, hist, 'mh125vs300_ma4')
 
     # plot ma = 8, various mH
-    plot_compare(f_h125_ma8, f_h300_ma8, h_name, h_opts, 'mh125vs300_ma8')
+    plot_compare(f_h125_ma8, f_h300_ma8, hist, 'mh125vs300_ma8')
 
     # plot mH = 125, various ma
-    plot_compare(f_h125_ma4, f_h125_ma8, h_name, h_opts, 'mh125_ma4vs8')
+    plot_compare(f_h125_ma4, f_h125_ma8, hist, 'mh125_ma4vs8')
 
     # plot mH = 300, various ma
-    plot_compare(f_h300_ma4, f_h300_ma8, h_name, h_opts, 'mh300_ma4vs8')
+    plot_compare(f_h300_ma4, f_h300_ma8, hist, 'mh300_ma4vs8')
 
