@@ -2,9 +2,21 @@
 """
 Submit lots of Pythia8 jobs to condor. All jobs run using the same input card.
 
-The user should specify the Pythia executable, an input card with physics
-processes & other instructions for Pythia8, an output directory on /hdfs,
-the number of events to generate per job, and the number of jobs to submit.
+The user must specify the range of job IDs to submit. The job ID also sets the
+random number generator seed, thus one should avoid using the same job ID more
+than once. The user can also specify the output directory
+(or one will be auto-generated), as well as a custom executable. There is also
+the possibiility of looping over a range of masses, in which case job IDs
+(as specified the jobIdRange arguments) will be used for each mass.
+
+To pass arguments to the Pythia8 program, use the '--args' flag.
+e.g. if you ran locally with:
+'--card mycard.txt --mass 8 -n 10000'
+you should call this script with:
+'--args --card mycard.txt --mass 8 -n 10000'
+
+Note that --args must be specified after all other arguments!
+
 There is also the option for a 'dry run' where all the files & directories are
 set up, but the job is not submitted.
 
@@ -64,7 +76,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     # All other program arguments to pass to program directly.
     parser.add_argument("--args",
                         help="All other program arguments. "
-                        "You must specify this after all other options",
+                        "You MUST specify this after all other options",
                         nargs=argparse.REMAINDER)
     # Some generic script options
     parser.add_argument("--dry",
