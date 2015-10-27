@@ -16,6 +16,8 @@
 *.dag.*
 *_progress.txt
 *.pdf
+*.o*
+*.e*
 
 py.py
 --auto
