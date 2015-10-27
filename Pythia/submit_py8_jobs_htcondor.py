@@ -59,7 +59,8 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
                         "Must be of the form: startMass, endMass, massStep. "
                         "For each mass point, njobs jobs will be submitted. "
                         "This will superseed any --mass option passed via --args",
-                        nargs=3, type=float, metavar=('startMass', 'endMass', 'massStep'))
+                        nargs=3, type=float,
+                        metavar=('startMass', 'endMass', 'massStep'))
     # All other program arguments to pass to program directly.
     parser.add_argument("--args",
                         help="All other program arguments. "
@@ -123,7 +124,8 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     # -------------------------------------------------------------------------
     if not args.dry:
         log.debug('Copying across input_cards...')
-        call(['hadoop', 'fs', '-copyFromLocal', '-f', 'input_cards', args.oDir.replace('/hdfs', '')])
+        call(['hadoop', 'fs', '-copyFromLocal', '-f',
+              'input_cards', args.oDir.replace('/hdfs', '')])
 
     # Copy executable to outputdir to sandbox it
     # -------------------------------------------------------------------------
@@ -140,7 +142,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     # Loop over required mass(es), generating DAG files for each
     # -------------------------------------------------------------------------
     if args.massRange:
-        if any(x<=0 for x in args.massRange):
+        if any(x <= 0 for x in args.massRange):
             raise RuntimeError('You cannot have a mass <= 0')
         if args.massRange[1] < args.massRange[0]:
             raise RuntimeError('You cannot have endMass < startMass')
@@ -153,23 +155,24 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     for mass in masses:
 
         # File stem common for all dag and status files
-        # -------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         mass_str = '%g' % mass if isinstance(mass, float) else str(mass)
         file_stem = '%s/ma%s_%s' % (generate_subdir(args.channel, args.energy),
                                     mass_str, strftime("%H%M%S"))
         checkCreateDir(os.path.dirname(file_stem), args.v)
 
         # Make DAG file
-        # -------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         dag_name = file_stem + '.dag'
         status_name = file_stem + '.status'
         status_files.append(status_name)
-        write_dag_file(dag_filename=dag_name, condor_filename='HTCondor/mcJob.condor',
+        write_dag_file(dag_filename=dag_name,
+                       condor_filename='HTCondor/mcJob.condor',
                        status_filename=status_name, exe=sandbox_exe,
                        log_dir=log_dir, mass=mass_str, args=args)
 
         # Submit it
-        # -------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         if args.dry:
             log.warning('Dry run - not submitting jobs or copying files.')
         else:
@@ -184,7 +187,8 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
         log.info('DAGstatus.py %s' % ' '.join(status_files))
 
 
-def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe, mass, args):
+def write_dag_file(dag_filename, condor_filename, status_filename,
+                   log_dir, exe, mass, args):
     """Write a DAG file for a set of jobs.
 
     Creates a DAG file, adding extra flags for the worker node script.
@@ -232,12 +236,13 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
 
             remote_exe = 'mc.exe'
             # args to pass to the script on the worker node
-            job_opts = ['--copyToLocal', os.path.join(args.oDir, 'input_cards') , 'input_cards',
+            cards_sandbox = os.path.join(args.oDir, 'input_cards')
+            job_opts = ['--copyToLocal', cards_sandbox, 'input_cards',
                         '--copyToLocal', exe, remote_exe,
                         '--exe', remote_exe]
 
             exe_args = args.args[:]
-            exe_args.extend(['--seed', str(job_ind)])  # Add in RNG seed based on job index
+            exe_args.extend(['--seed', str(job_ind)])  # RNG seed using job index
 
             # Sort out output files. Ensure that they have the seed appended to
             # filename, and that they will be copied to hdfs afterwards.
@@ -245,14 +250,14 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
             for fmt in ['hepmc', 'root', 'lhe']:
                 # special warning for hepmc files
                 flag = '--%s' % fmt
-                if fmt == "hepmc" and '--hepmc' not in exe_args:
+                if fmt == "hepmc" and flag not in exe_args:
                     log.warning("You didn't specify --hepmc in your list of --args. "
                                 "No HepMC file will be produced.")
                 if flag not in exe_args:
                     continue
                 else:
                     # Auto generate output filename if necessary
-                    # Little bit hacky, as we have to manually sync with PythiaProgramOpts.h
+                    # Bit hacky as have to manually sync with PythiaProgramOpts
                     if not get_option_in_args(args.args, flag):
                         out_name = generate_filename(args.channel, mass, args.energy, n_events, fmt)
                         set_option_in_args(exe_args, flag, out_name)
@@ -263,7 +268,8 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
                     # Add in seed/job ID to filename. Note that generateMC.cc adds the
                     # seed to the auto-generated filename, so we only need to modify it
                     # if the user has specified the name
-                    out_name = "%s_seed%d.%s" % (os.path.splitext(out_name)[0], job_ind, fmt)
+                    out_name = "%s_seed%d.%s" % (os.path.splitext(out_name)[0],
+                                                 job_ind, fmt)
                     set_option_in_args(exe_args, flag, out_name)
 
                     # make sure we transfer hepmc to hdfs after generating
@@ -273,10 +279,10 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir, exe,
             job_opts.extend(exe_args)
             log.debug('job_opts: %s' % job_opts)
             log_name = os.path.splitext(os.path.basename(dag_filename))[0]
-            dag_file.write('VARS %s opts="%s" logdir="%s" logfile="%s"\n' % (job_name,
-                                                                             ' '.join(job_opts),
-                                                                             log_dir,
-                                                                             log_name))
+            dag_file.write('VARS %s ' % job_name)
+            dag_file.write('opts="%s" logdir="%s" logfile="%s"\n' % (' '.join(job_opts),
+                                                                     log_dir,
+                                                                     log_name))
         dag_file.write('NODE_STATUS_FILE %s 30\n' % status_filename)
 
 
@@ -305,9 +311,9 @@ def generate_subdir(channel, energy=13):
 
 
 def generate_dir_soolin(channel, energy=13):
-    """Generate a directory name on Iridis using userId, channel, and date.
+    """Generate a directory name on /hdfs using userId, channel, and date.
 
-    >>> generate_dir_iridis('ggh_4tau')
+    >>> generate_dir_soolin('ggh_4tau')
     /hdfs/user/<username>/NMSSMPheno/Pythia8/<energy>TeV/ggh_4tau/<date>
     """
     uid = getpass.getuser()
