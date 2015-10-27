@@ -41,7 +41,7 @@ First install:
 
 ```
 wget http://lcgapp.cern.ch/project/simu/HepMC/download/HepMC-2.06.09.tar.gz -O- | tar xvz
-mkdir -P HepMC/build HepMC/install
+mkdir -p HepMC/build HepMC/install
 cd HepMC/build
 ../../HepMC-2.06.09/configure --prefix=${PWD}/../install/ --with-momentum=GEV --with-length=MM
 make -j4
