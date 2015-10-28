@@ -66,7 +66,8 @@ generateMC.exe: $(OBJDIR)/generateMC.o $(OBJDIR)/RootHistManager.o $(OBJDIR)/Pyt
 	-L$(HEPMCDIR)/$(LIBDIR) -Wl,-rpath $(HEPMCDIR)/$(LIBDIR) -lHepMC \
 	`$(ROOTDIR)/$(BINDIR)/root-config --libs` -lz\
 
-$(OBJDIR)/generateMC.o: $(SRCDIR)/generateMC.cc $(OBJDIR)
+$(OBJDIR)/generateMC.o: $(SRCDIR)/generateMC.cc
+	if test ! -d $(OBJDIR); then mkdir $(OBJDIR); else : ; fi;
 	$(CXX) -c $< -o $@ 	\
 	-I`$(ROOTDIR)/$(BINDIR)/root-config --incdir` \
 	-isystem $(BOOSTDIR_INC) \
@@ -74,14 +75,11 @@ $(OBJDIR)/generateMC.o: $(SRCDIR)/generateMC.cc $(OBJDIR)
 	-I$(PYTHIA8DIR)/$(INCDIR) \
 	-I./include $(CXX_COMMON)
 
-$(OBJDIR)/PythiaProgramOpts.o: $(SRCDIR)/PythiaProgramOpts.cc $(INCDIR)/PythiaProgramOpts.h $(OBJDIR)
+$(OBJDIR)/PythiaProgramOpts.o: $(SRCDIR)/PythiaProgramOpts.cc $(INCDIR)/PythiaProgramOpts.h
 	$(CXX) -c $< -o $@ -I./$(INCDIR) -isystem $(BOOSTDIR_INC) $(CXX_COMMON)
 
-$(OBJDIR)/RootHistManager.o: $(SRCDIR)/RootHistManager.cc $(INCDIR)/RootHistManager.h $(OBJDIR)
+$(OBJDIR)/RootHistManager.o: $(SRCDIR)/RootHistManager.cc $(INCDIR)/RootHistManager.h
 	$(CXX) -c $< -o $@ -I./$(INCDIR) -I$(ROOTDIR)/$(INCDIR) $(CXX_COMMON)
-
-$(OBJDIR):
-	@if test ! -d $(OBJDIR); then mkdir $(OBJDIR); else : ; fi
 
 # Clean up: remove executables and outdated files.
 .PHONY: clean
