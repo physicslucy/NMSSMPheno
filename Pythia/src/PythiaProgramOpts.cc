@@ -24,10 +24,10 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
   filenameROOT_(""),
   printEvent_(false),
   verbose_(false),
-  desc_("\nProduces 13 TeV MC for p-p collisions.\n"
+  desc_("\nProduces MC for p-p collisions.\n"
     "User must specify the physics process(es) to be generated \nvia an input"
     " card (see input_cards directory for examples).\nDefaults for beams, "
-    "PDF, etc are set in input_cards/common_pp13.cmnd\n\nAllowed options:")
+    "PDF, etc are set in input_cards/common_pp.cmnd\n\nAllowed options:")
 {
   desc_.add_options()
     ("help,h", "Produce help message")
