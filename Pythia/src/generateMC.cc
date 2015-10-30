@@ -149,12 +149,36 @@ int main(int argc, char *argv[]) {
       pythia.process.list();
     }
 
+
+    //-------------------------------------------------------------------------
+    // STORE IN HEPMC/LHE
+    //-------------------------------------------------------------------------
+    // Construct new empty HepMC event and fill it.
+    // Write the HepMC event to file. Done with it.
+    if (opts.writeToHEPMC()) {
+      HepMC::GenEvent* hepmcevt = new HepMC::GenEvent(HepMC::Units::GEV, HepMC::Units::MM);
+      ToHepMC.fill_next_event(pythia, hepmcevt);
+      ascii_io << hepmcevt;
+      delete hepmcevt;
+    }
+
+    if (opts.writeToLHE()) {
+      // Store event info in the LHAup object.
+      myLHA.setEvent();
+      // Write out this event info on the file.
+      // With optional argument (verbose =) false the file is smaller.
+      myLHA.eventLHEF();
+    }
+
+
     //-------------------------------------------------------------------------
     // Analyse the event particles, fill histograms, etc.
     //-------------------------------------------------------------------------
+    if (!opts.writeToROOT()) continue;
+
     bool donePlots = false;
 
-    Event & event = pythia.event;
+    Event event = pythia.event;
 
     // find h decay products and look at separation
     for (int i = 0; i < event.size(); ++i) {
@@ -185,7 +209,7 @@ int main(int argc, char *argv[]) {
           // look at a1 daughter particles
           Vec4 daughter1Mom = event[a1Itr->daughter1()].p();
           if (a1Itr->daughter2() == 0 || a1Itr->daughter2() == a1Itr->daughter1()) {
-            cout << "OH TTS" << endl;
+            cout << "OH BUM" << endl;
           }
           Vec4 daughter2Mom = event[a1Itr->daughter2()].p();
           a1DecayDr = REtaPhi(daughter1Mom, daughter2Mom);
@@ -250,27 +274,6 @@ int main(int argc, char *argv[]) {
         donePlots = true;
       }
     }
-
-    //-------------------------------------------------------------------------
-    // STORE IN HEPMC/LHE
-    //-------------------------------------------------------------------------
-    // Construct new empty HepMC event and fill it.
-    // Write the HepMC event to file. Done with it.
-    if (opts.writeToHEPMC()) {
-      HepMC::GenEvent* hepmcevt = new HepMC::GenEvent(HepMC::Units::GEV, HepMC::Units::MM);
-      ToHepMC.fill_next_event(pythia, hepmcevt);
-      ascii_io << hepmcevt;
-      delete hepmcevt;
-    }
-
-    if (opts.writeToLHE()) {
-      // Store event info in the LHAup object.
-      myLHA.setEvent();
-      // Write out this event info on the file.
-      // With optional argument (verbose =) false the file is smaller.
-      myLHA.eventLHEF();
-    }
-
   } // end of generating events loop
 
   progressFile.close();
