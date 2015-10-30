@@ -114,6 +114,16 @@ int main(int argc, char *argv[]) {
   a1DecayMuTree.Branch("a1DecayMuPt", &a1DecayMuPt, "a1DecayMuPt/Float_t");
   a1DecayMuTree.Branch("a1DecayMuEta", &a1DecayMuEta, "a1DecayMuEta/Float_t");
   a1DecayMuTree.Branch("a1DecayMuPhi", &a1DecayMuPhi, "a1DecayMuPhi/Float_t");
+  // vars for tau decays (all)
+  TTree tauDecayTree("tauDecayVars", "tauDecayVars");
+  float tauDecayPtRatio(-99.), tauDecayDr(99.);
+  tauDecayTree.Branch("tauDecayPtRatio", &tauDecayPtRatio, "tauDecayPtRatio/Float_t");
+  tauDecayTree.Branch("tauDecayDr", &tauDecayDr, "tauDecayDr/Float_t");
+  // vars for tau decays (charged only)
+  TTree tauDecayChargedTree("tauDecayChargedVars", "tauDecayChargedVars");
+  float tauDecayChargedPtRatio(-99.), tauDecayChargedDr(99.);
+  tauDecayChargedTree.Branch("tauDecayChargedPtRatio", &tauDecayChargedPtRatio, "tauDecayChargedPtRatio/Float_t");
+  tauDecayChargedTree.Branch("tauDecayChargedDr", &tauDecayChargedDr, "tauDecayChargedDr/Float_t");
 
   //---------------------------------------------------------------------------
   // GENERATE EVENTS
@@ -188,9 +198,28 @@ int main(int argc, char *argv[]) {
             a1DecayPhi = dItr->phi();
             a1DecayTree.Fill();
           }
+
+          // look at tau decay products
+          for (auto & tauItr : getAllDescendants(event, a1Itr, false)) {
+            // get taus that decay properly (not gamma radiation)
+            if (tauItr->idAbs() == 15 && tauItr->daughterList().size() > 2) {
+              for (auto & pItr : getAllDescendants(event, tauItr, true)) {
+                // for all products
+                tauDecayPtRatio = pItr->pT() / tauItr->pT();
+                tauDecayDr = REtaPhi(pItr->p(), tauItr->p());
+                tauDecayTree.Fill();
+                // for charged products
+                if (fabs(pItr->charge()) != 0) {
+                  tauDecayChargedPtRatio = pItr->pT() / tauItr->pT();
+                  tauDecayChargedDr = REtaPhi(pItr->p(), tauItr->p());
+                  tauDecayChargedTree.Fill();
+                }
+              }
+            }
+          }
         }
 
-        // anlayze the muons in the event. We want 2 SS muons.
+        // analyze the muons in the tau decays. We want 2 SS muons.
         std::vector<Particle*> posMu;
         std::vector<Particle*> negMu;
         for (auto & itr : getAllDescendants(event, &h1, true)) {
@@ -261,6 +290,8 @@ int main(int argc, char *argv[]) {
       a1Tree.Write("", TObject::kOverwrite);
       a1DecayTree.Write("", TObject::kOverwrite);
       a1DecayMuTree.Write("", TObject::kOverwrite);
+      tauDecayTree.Write("", TObject::kOverwrite);
+      tauDecayChargedTree.Write("", TObject::kOverwrite);
       outFile->Close();
       delete outFile;
   }
