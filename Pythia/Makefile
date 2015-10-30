@@ -48,7 +48,7 @@ endif
 
 # Other common flags
 # -------------------------------------------------
-CXX_COMMON = -std=c++11 -O2 -D_USE_XOPEN2K8 -Wall -Wextra -Wshadow -pedantic-errors
+CXX_COMMON = -std=c++11 -O3 -D_USE_XOPEN2K8 -Wall -Wextra -Wshadow -pedantic-errors
 BOOST_LIBS = -lboost_system -lboost_filesystem -lboost_program_options -lboost_iostreams
 
 # `$(FASTJETDIR)/bin/fastjet-config --cxxflags --plugins` \
@@ -67,7 +67,7 @@ generateMC.exe: $(OBJDIR)/generateMC.o $(OBJDIR)/RootHistManager.o $(OBJDIR)/Pyt
 	`$(ROOTDIR)/$(BINDIR)/root-config --libs` -lz\
 
 $(OBJDIR)/generateMC.o: $(SRCDIR)/generateMC.cc
-	if test ! -d $(OBJDIR); then mkdir $(OBJDIR); else : ; fi;
+	@if test ! -d $(OBJDIR); then mkdir $(OBJDIR); else : ; fi;
 	$(CXX) -c $< -o $@ 	\
 	-I`$(ROOTDIR)/$(BINDIR)/root-config --incdir` \
 	-isystem $(BOOSTDIR_INC) \
