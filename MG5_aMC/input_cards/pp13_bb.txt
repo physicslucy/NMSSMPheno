@@ -1,5 +1,5 @@
 set automatic_html_opening False
-set pythia8_path /users/ra12451/pythia8209
+set pythia8_path /users/$LOGNAME/Pythia8/pythia8212
 generate p p > b b~ [QCD]
 output pp13_bb
 launch
@@ -7,10 +7,12 @@ launch
   set run_card parton_shower PYTHIA8
   set run_card ebeam1 6500
   set run_card ebeam2 6500
+  set run_card iseed 0
   #set run_card ickkw 3
   #set run_card jetalgo 1
   #set run_card jetradius 1
   #set shower_card Qcut 20
   #set shower_card njmax 2
   set shower_card extralibs dl
-
+  set shower_card extrapaths ../lib /users/$LOGNAME/HepMC/install/lib
+  set shower_card includepaths /users/$LOGNAME/HepMC/install/include
