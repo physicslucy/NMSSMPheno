@@ -46,8 +46,8 @@ int main(int argc, char *argv[]) {
   //---------------------------------------------------------------------------
   Pythia pythia;
   pythia.readFile("input_cards/common_pp.cmnd");
-  pythia.readString("Beams:eCM = " + lexical_cast<std::string>(opts.energy() * 1000));
   pythia.readFile(opts.cardName());
+  pythia.readString("Beams:eCM = " + lexical_cast<std::string>(opts.energy() * 1000));
 
   pythia.readString("Main:numberOfEvents = " + lexical_cast<std::string>(opts.nEvents()));
   pythia.readString("Random:seed = " + lexical_cast<std::string>(opts.seed()));
