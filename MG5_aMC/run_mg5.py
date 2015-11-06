@@ -73,6 +73,7 @@ def run_mg5(in_args=sys.argv[1:]):
 
     # make a new card for MG5_aMC
     new_card = args.card.replace(".txt", "_new.txt")
+    args.__dict__['new_card'] = new_card
     make_card(args.card, new_card, fields)
 
     # run MG5_aMC
@@ -81,6 +82,8 @@ def run_mg5(in_args=sys.argv[1:]):
         mg5_cmds = [os.path.abspath(args.exe), new_card]
         log.debug(mg5_cmds)
         call(mg5_cmds)
+
+    return args
 
 
 def make_card(in_card, out_card, fields):
