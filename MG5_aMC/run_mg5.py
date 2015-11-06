@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """
 Script to run MG5_aMC locally. Creates new input card from user's options,
 to ensure that Pythia8 & HepMC linked correctly, and other options.
@@ -40,13 +41,13 @@ def run_mg5(in_args=sys.argv[1:]):
     parser.add_argument('--hepmc',
                         help='Path to HepMC install directory',
                         required=True)
-    parser.add_argument('--option',
-                        nargs=2,
-                        action='append',
-                        help='Allow replacement of any other options. '
-                        'Specify as: --option OPTION VALUE, for as many '
-                        'options as you wish to change '
-                        'e.g. --option ickkw 3 --option Qcut 15')
+    # parser.add_argument('--option',
+    #                     nargs=2,
+    #                     action='append',
+    #                     help='Allow replacement of any other options. '
+    #                     'Specify as: --option OPTION VALUE, for as many '
+    #                     'options as you wish to change '
+    #                     'e.g. --option ickkw 3 --option Qcut 15')
     parser.add_argument('--dry',
                         action='store_true',
                         help="Only make card, don't run MG5_aMC")
