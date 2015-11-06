@@ -11,7 +11,7 @@ Init:showChangedSettings = on      ! list changed settings
 ! Beam parameter settings. Values below agree with default ones.
 Beams:idA = 2212                   ! first beam, p = 2212, pbar = -2212
 Beams:idB = 2212                   ! second beam, p = 2212, pbar = -2212
-! Beams:eCM = 13000 ! specify in the program
+
 
 ! LHAPDF tune
 ! CUETP8M1 tune a la CMS
