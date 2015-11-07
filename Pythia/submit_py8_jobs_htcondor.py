@@ -284,8 +284,11 @@ def write_dag_file(dag_filename, condor_filename, status_filename,
                                                  job_ind, fmt)
                     set_option_in_args(exe_args, flag, out_name)
 
-                    # make sure we transfer hepmc to hdfs after generating
-                    job_opts.extend(['--copyFromLocal', out_name, args.oDir])
+                    # transfer to hdfs after generating, to a subfolder
+                    # depending on filetype
+                    oDir_fmt = os.path.join(args.oDir, fmt)
+                    checkCreateDir(oDir_fmt)
+                    job_opts.extend(['--copyFromLocal', out_name, oDir_fmt])
 
             job_opts.append('--args')
             job_opts.extend(exe_args)
