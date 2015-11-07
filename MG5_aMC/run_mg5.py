@@ -17,46 +17,59 @@ logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 log = logging.getLogger(__name__)
 
 
-def run_mg5(in_args=sys.argv[1:]):
-    """Main fn"""
+class MG5ArgParser(argparse.ArgumentParser):
+    """
+    Class to handle parsing of options. This allows it to be used in other
+    scripts (e.g. for HTCOndr/PBS batch scripts)
+    """
 
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('card',
-                        help='card file to pass to MG5_aMC')
-    parser.add_argument('--exe',
-                        help='Location of mg5_aMC executable',
-                        default="mg5_aMC")
-    parser.add_argument('-n', '--number',
-                        dest='nevents',
-                        help='Number of events to generate',
-                        type=int)
-    parser.add_argument('--seed',
-                        dest='iseed',
-                        help='Random number generator seed',
-                        type=int)
-    parser.add_argument('--pythia8',
-                        dest='pythia8_path',
-                        help='Path to Pythia directory',
-                        required=True)
-    parser.add_argument('--hepmc',
-                        help='Path to HepMC install directory',
-                        required=True)
-    # parser.add_argument('--option',
+    def __init__(self, *args, **kwargs):
+        super(MG5ArgParser, self).__init__(*args, **kwargs)
+        self.add_arguments()
+
+    def add_arguments(self):
+        self.add_argument('card',
+                          help='card file to pass to MG5_aMC')
+        self.add_argument('--exe',
+                          help='Location of mg5_aMC executable',
+                          default="mg5_aMC")
+        self.add_argument('-n', '--number',
+                          dest='nevents',
+                          help='Number of events to generate',
+                          type=int)
+        self.add_argument('--seed',
+                          dest='iseed',
+                          help='Random number generator seed',
+                          type=int)
+        self.add_argument('--pythia8',
+                          dest='pythia8_path',
+                          help='Path to Pythia directory',
+                          required=True)
+        self.add_argument('--hepmc',
+                          help='Path to HepMC install directory',
+                          required=True)
+        self.add_argument('--dry',
+                          action='store_true',
+                          help="Only make card, don't run MG5_aMC")
+        self.add_argument('--new',
+                          help='Filename for new card. '
+                          'If not specified, defaults to <card>_new.txt')
+        self.add_argument("-v",
+                          action='store_true',
+                          help="Display debug messages.")
+    # self.add_argument('--option',
     #                     nargs=2,
     #                     action='append',
     #                     help='Allow replacement of any other options. '
     #                     'Specify as: --option OPTION VALUE, for as many '
     #                     'options as you wish to change '
     #                     'e.g. --option ickkw 3 --option Qcut 15')
-    parser.add_argument('--dry',
-                        action='store_true',
-                        help="Only make card, don't run MG5_aMC")
-    parser.add_argument('--new',
-                        help='Filename for new card. '
-                        'If not specified, defaults to <card>_new.txt')
-    parser.add_argument("-v",
-                        action='store_true',
-                        help="Display debug messages.")
+
+
+def run_mg5(in_args=sys.argv[1:]):
+    """Main function to create a new card for MG5_aMC and run it."""
+
+    parser = MG5ArgParser(description=__doc__)
     args = parser.parse_args(in_args)
     if args.v:
         log.setLevel(logging.DEBUG)
@@ -124,7 +137,7 @@ def make_card(in_card, out_card, fields):
             try:
                 # get old values to replace
                 old_values = p.search(line).group(1)
-            except IndexError as e:
+            except IndexError:
                 log.error('Error finding line with %s in card' % name)
                 raise
             card_template[i] = line.replace(old_values, str(value))
