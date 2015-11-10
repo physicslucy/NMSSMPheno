@@ -33,13 +33,13 @@ class MG5ArgParser(argparse.ArgumentParser):
         self.add_argument('--exe',
                           help='Location of mg5_aMC executable',
                           default="mg5_aMC")
-        self.add_argument('-n', '--number',
-                          dest='nevents',
+        self.add_argument('-n', '--nevents',
                           help='Number of events to generate',
                           type=int)
         self.add_argument('--seed',
                           dest='iseed',
                           help='Random number generator seed',
+                          default=0,
                           type=int)
         self.add_argument('--pythia8',
                           dest='pythia8_path',
