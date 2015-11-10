@@ -216,20 +216,44 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir,
         dag_file.write('# DAG for channel %s\n' % args.channel)
         dag_file.write('# Outputting to %s\n' % args.oDir)
         for job_ind in xrange(args.jobIdRange[0], args.jobIdRange[1] + 1):
+            # add job to DAG
             job_name = '%d_%s' % (job_ind, args.channel)
             dag_file.write('JOB %s %s\n' % (job_name, condor_filename))
 
             # args to pass to the script on the worker node
+            job_opts = []
+
             # start with files to copyToLocal at the start of job running
-            job_opts = ['--oDir', args.oDir]
+            # ----------------------------------------------------------------
             if copyToLocal:
                 for src, dest in copyToLocal.iteritems():
                     job_opts.extend(['--copyToLocal', src, dest])
 
             mg5_args.iseed = job_ind  # RNG seed using job index
 
+            # Make sure output files are copied across afterwards
+            # ----------------------------------------------------------------
+            output_dir = os.path.join(args.channel, 'Events', 'run_01')
+            name_stem = '%s_%dTeV_n%d_seed%d' % (args.channel, args.energy,
+                                                 mg5_args.nevents, mg5_args.iseed)
+
+            lhe_zip = os.path.join(output_dir, 'events.lhe.gz')
+            lhe_final_zip = '%s.lhe.gz' % name_stem
+
+            hepmc_zip = os.path.join(output_dir, 'events_PYTHIA8_0.hepmc.gz')
+            hepmc_final_zip = '%s.hepmc.gz' % name_stem
+
+            job_opts.extend(['--copyFromLocal', lhe_zip, os.path.join(args.oDir, 'lhe', lhe_final_zip)])
+            job_opts.extend(['--copyFromLocal', hepmc_zip, os.path.join(args.oDir, 'hepmc', hepmc_final_zip)])
+            # Supplementary materials
+            job_opts.extend(['--copyFromLocal', os.path.join(output_dir, 'RunMaterial.tar.gz'),
+                             os.path.join(args.oDir, 'other', 'RunMaterial_%d.tar.gz' % job_ind)])
+            job_opts.extend(['--copyFromLocal', os.path.join(output_dir, 'summary.txt'),
+                             os.path.join(args.oDir, 'other', 'summary_%d.txt' % job_ind)])
+
             # add in any other files that should be copied from the worker at
             # the end of the job
+            # ----------------------------------------------------------------
             if copyFromLocal:
                 for src, dest in copyFromLocal.iteritems():
                     job_opts.extend(['--copyFromLocal', src, dest])
@@ -247,6 +271,7 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir,
             job_opts.remove('--card')
             log.debug('job_opts: %s' % job_opts)
 
+            # write job vars to file
             dag_file.write('VARS %s ' % job_name)
             log_name = os.path.splitext(os.path.basename(dag_filename))[0]
             dag_file.write('opts="%s" logdir="%s" logfile="%s"\n' % (' '.join(job_opts),
