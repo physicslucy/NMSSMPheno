@@ -18,6 +18,8 @@
 *.pdf
 *.o*
 *.e*
+*.tar.gz
+*.tgz
 
 py.py
 --auto
