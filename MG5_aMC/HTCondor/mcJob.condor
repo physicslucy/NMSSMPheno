@@ -2,8 +2,6 @@
 
 Executable = HTCondor/mcJob.py
 Universe = vanilla
-logdir = logs
-logfile = test
 Output = $(logdir)/$(logfile).$(cluster).$(process).out
 Error = $(logdir)/$(logfile).$(cluster).$(process).err
 Log = $(logdir)/$(logfile).$(cluster).$(process).log
@@ -19,7 +17,6 @@ account_group_user = $ENV(LOGNAME)
 getenv = true
 transfer_input_files =
 
-opts = --copyToLocal /users/ra12451/zips/pythia8212.tgz pythia8.tgz --copyToLocal /users/ra12451/zips/MG5_aMC_v2.3.2.2.tar.gz MG5_aMC.tgz --copyToLocal /users/ra12451/NMSSMPheno/MG5_aMC/input_cards/pp13_bb_new.txt pp13_bb.txt --copyToLocal /users/ra12451/NMSSMPheno/MG5_aMC/run_mg5.py run_mg5.py --oDir /hdfs/user/ra12451/NMSSMPheno/MG5_aMC/test --args pp13_bb.txt -n 5 --seed 2 --pythia8 /users/ra12451/Pythia8/pythia8212 --hepmc /users/ra12451/HepMC/install
 arguments = $(opts)
 
 queue
