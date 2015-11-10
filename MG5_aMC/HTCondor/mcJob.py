@@ -17,7 +17,6 @@ from subprocess import call
 import sys
 import shutil
 import os
-import sys
 import tarfile
 from glob import glob
 
