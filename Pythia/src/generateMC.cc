@@ -32,6 +32,7 @@ using namespace Pythia8;
 std::vector<Particle*> getChildren(Event & event, Particle * p);
 std::vector<Particle*> getAllDescendants(Event & event, Particle * p, bool finalStateOnly);
 std::string getCurrentTime();
+int gzip_file(std::string filename);
 
 /**
  * @brief Main function for generating MC events
@@ -306,6 +307,17 @@ int main(int argc, char *argv[]) {
     myLHA.closeLHEF(true);
   }
 
+  if (opts.zip()) {
+    // GZIP output to save space
+    std::vector<std::string> filenames;
+    if (opts.writeToLHE()) filenames.push_back(opts.filenameLHE());
+    if (opts.writeToHEPMC()) filenames.push_back(opts.filenameHEPMC());
+
+    for (const auto & fname : filenames) {
+      int res = gzip_file(fname);
+      if (res != 0) return res;
+    }
+  }
 }
 
 
@@ -377,4 +389,25 @@ std::string getCurrentTime() {
   std::string str1 = std::string(dt);
   boost::algorithm::trim(str1);
   return str1;
+}
+
+
+/**
+ * @brief gzip file
+ * @details The output will be <filename>.gz
+ *
+ * @param filename Name of the file to compress
+ */
+int gzip_file(std::string filename) {
+  std::string cmd = "gzip -f " + filename;
+  FILE * in = popen(cmd.c_str(), "r");
+  if (!in) {
+    return 1;
+  }
+  char buff[1024];
+  while(fgets(buff, sizeof(buff), in) != NULL) {
+    cout << buff;
+  }
+  pclose(in);
+  return 0;
 }

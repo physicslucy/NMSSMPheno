@@ -58,6 +58,10 @@ def main(in_args=sys.argv[1:]):
     print cmds
     call(cmds)
 
+    # tar up output
+    hepmc_file = get_option_in_args(args.args, '--hepmc')
+    lhe_file = get_option_in_args(args.args, '--lhe')
+
     print os.listdir(os.getcwd())
 
     # Copy files from worker node area to /hdfs or /storage
@@ -72,6 +76,35 @@ def main(in_args=sys.argv[1:]):
                 shutil.copy2(source, dest)
             elif os.path.isdir(source):
                 shutil.copytree(source, dest)
+
+
+def get_option_in_args(args, flag):
+    """Return value that accompanied flag in list of args.
+
+    Will return None if there is no accompanying value, and will raise a
+    KeyError if the flag does not appear in the list.
+
+    >>> args = ['--foo', 'bar', '--man']
+    >>> get_option_in_args(args, "--foo")
+    bar
+    >>> get_option_in_args(args, "--man")
+    None
+    >>> get_option_in_args(args, "--fish")
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "submit_mc_jobs_htcondor.py", line 272, in get_option_in_args
+        raise KeyError('%s not in args' % flag)
+    KeyError: '--fish not in args'
+    """
+    # maybe a dict would be better for this and set_option_in_args()?
+    if flag not in args:
+        raise KeyError('%s not in args' % flag)
+    if flag == args[-1]:
+        return None
+    val = args[args.index(flag) + 1]
+    if val.startswith('-'):
+        return None
+    return val
 
 
 if __name__ == "__main__":

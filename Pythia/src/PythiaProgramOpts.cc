@@ -24,6 +24,7 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
   filenameROOT_(""),
   printEvent_(false),
   verbose_(false),
+  zip_(true),
   desc_("\nProduces MC for p-p collisions.\n"
     "User must specify the physics process(es) to be generated \nvia an input"
     " card (see input_cards directory for examples).\nDefaults for beams, "
@@ -63,6 +64,8 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
       "Prints complete event listing of first event to screen")
     ("verbose,v", po::bool_switch(&verbose_)->default_value(verbose_),
       "Output debugging statements")
+    ("zip", po::bool_switch(&zip_)->default_value(zip_),
+      "Compress LHE and HepMC outputs using gzip")
   ;
 
   po::variables_map vm;
@@ -100,10 +103,6 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
     if (filenameHEPMC_ == "") {
       filenameHEPMC_ = generateFilenameStem() + ".hepmc";
     }
-    // Check if there's already an extension on filename, if not add one
-    if(!PythiaProgramOpts::checkExtension(filenameHEPMC_, ".hepmc")) {
-      filenameHEPMC_ += ".hepmc";
-    }
   }
 
   if (vm.count("lhe")) {
@@ -112,10 +111,6 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
     if (filenameLHE_ == "") {
       filenameLHE_ = generateFilenameStem() + ".lhe";
     }
-    // Check if there's already an extension on filename, if not add one
-    if(!PythiaProgramOpts::checkExtension(filenameLHE_, ".lhe")) {
-      filenameLHE_ += ".lhe";
-    }
   }
 
   if (vm.count("root")) {
@@ -123,10 +118,6 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
     // Generate default filename if necessary
     if (filenameROOT_ == "") {
       filenameROOT_ = generateFilenameStem() + ".root";
-    }
-    // Check if there's already an extension on filename, if not add one
-    if(!PythiaProgramOpts::checkExtension(filenameROOT_, ".root")) {
-      filenameROOT_ += ".root";
     }
   }
 }

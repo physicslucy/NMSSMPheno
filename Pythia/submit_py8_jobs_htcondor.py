@@ -118,6 +118,11 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     args.card = card
     args.channel = os.path.splitext(os.path.basename(card))[0]
 
+    # Make sure output zipped
+    # -------------------------------------------------------------------------
+    if '--zip' not in args.args:
+        args.args.append("--zip")
+
     # Get CoM energy
     # -------------------------------------------------------------------------
     try:
@@ -282,6 +287,8 @@ def write_dag_file(dag_filename, condor_filename, status_filename,
                     # if the user has specified the name
                     out_name = "%s_seed%d.%s" % (os.path.splitext(out_name)[0],
                                                  job_ind, fmt)
+                    if '--zip' in exe_args:
+                        out_name += ".gz"
                     set_option_in_args(exe_args, flag, out_name)
 
                     # transfer to hdfs after generating, to a subfolder

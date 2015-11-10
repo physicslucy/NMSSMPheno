@@ -44,6 +44,8 @@ class PythiaProgramOpts
 
     bool verbose() { return verbose_; }
 
+    bool zip() { return zip_; }
+
     /**
      * @brief Prints a summary of program options to STDOUT.
      * Useful for start of program.
@@ -95,6 +97,8 @@ class PythiaProgramOpts
 
     bool printEvent_;
     bool verbose_;
+
+    bool zip_;
 
     po::options_description desc_;
 };
