@@ -69,19 +69,7 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
   ;
 
   po::variables_map vm;
-  try {
-    po::store(po::parse_command_line(argc, argv, desc_), vm);
-  } catch (po::invalid_option_value e) {
-    printOptionError(e, "Invalid option value");
-  } catch (po::unknown_option e) {
-    printOptionError(e, "Unrecognised option");
-  } catch (po::invalid_command_line_syntax e) {
-    printOptionError(e, "Invalid command line syntax");
-  } catch (boost::program_options::required_option e) {
-    printOptionError(e, "Required option missing");
-  } catch (po::error e) {
-    printOptionError(e, "Error in program_options");
-  }
+  po::store(po::parse_command_line(argc, argv, desc_), vm);
 
   // put this before po::notify otherwise error thrown when just using --help
   if (vm.count("help")) {
