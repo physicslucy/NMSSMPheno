@@ -20,6 +20,8 @@
 *.e*
 *.tar.gz
 *.tgz
+*.gz
+*/input_cards/*_new.txt
 
 py.py
 --auto
