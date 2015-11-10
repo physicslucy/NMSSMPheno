@@ -5,9 +5,7 @@ Submit MG5_aMC@NLO jobs to condor. All jobs run using the same input card.
 The user must specify the range of job IDs to submit. The job ID also sets the
 random number generator seed, thus one should avoid using the same job ID more
 than once. The user can also specify the output directory
-(or one will be auto-generated), as well as a custom executable. There is also
-the possibiility of looping over a range of masses, in which case job IDs
-(as specified the jobIdRange arguments) will be used for each mass.
+(or one will be auto-generated).
 
 To pass arguments to the MG5_aMC@NLO program, use the '--args' flag.
 e.g. if you ran locally with:
@@ -33,13 +31,18 @@ import sys
 import os
 import getpass
 import logging
+import re
 from run_mg5 import MG5ArgParser
+
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 log = logging.getLogger(__name__)
 
+# Set the local MG5 install directory here.
+MG5_DIR = '/users/%s/MG5_aMC/MG5_aMC_v2_3_3' % (os.environ['LOGNAME'])
 
-def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
+
+def submit_mc_jobs_htcondor(in_args=sys.argv[1:], mg5_dir=MG5_DIR):
     """
     Main function. Sets up all the relevant directories, makes condor
     job and DAG files, then submits them if necessary.
@@ -122,17 +125,21 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     copy_to_local = {}
     copy_from_local = {}
 
-    # Get the program zip and put it in hdfs
+    # Make the program zip and put it in hdfs
     # -------------------------------------------------------------------------
-    mg5_url = 'https://launchpad.net/mg5amcnlo/2.0/2.3.0/+download/MG5_aMC_v2.3.3.tar.gz'
-    zip_dir = '/hdfs/user/%s/NMSSMPheno/zips' % (os.environ['LOGNAME'])
+    # don't want any trailing "/"
+    if mg5_dir.endswith("/"):
+        mg5_dir = mg5_dir.rstrip('/')
+    version = re.findall(r'MG5_aMC_v.*', mg5_dir)[0]
+    log.info('Creating tar file of MG5 installation, please wait...')
+    call(['tar', 'czf', '%s.tgz' % version, '-C', os.path.dirname(mg5_dir), version])
+    # copy to hdfs
+    zip_dir = '/hdfs/user/%s/NMSSMPheno/zips/' % (os.environ['LOGNAME'])
     check_create_dir(zip_dir, args.v)
-    zip_path = os.path.join(zip_dir, os.path.basename(mg5_url))
-    zip_path = os.path.join(zip_dir, 'MG5_aMC_v2_3_2_2.tgz')
+    zip_path = os.path.join(zip_dir, '%s.tgz' % version)
+    call(['hadoop', 'fs', '-copyFromLocal', '-f',
+          '%s.tgz' % version, zip_dir.replace('/hdfs', '')])
     copy_to_local[zip_path] = 'MG5_aMC.tgz'
-    if not os.path.isfile(zip_path):
-        call(['wget', mg5_url])
-        shutil.move(os.path.basename(mg5_url), zip_path)
 
     # Copy across input cards to hdfs to sandbox them
     # -------------------------------------------------------------------------

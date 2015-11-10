@@ -68,7 +68,6 @@ def main(in_args=sys.argv[1:]):
     elif not mg5_tar:
         raise RuntimeError('Cannot find MG5 tar.')
     mg5_tar = mg5_tar[0]
-    # mg5_tar = '/hdfs/user/%s/NMSSMPheno/zips/MG5_aMC' % (os.environ['LOGNAME'])
     with tarfile.open(mg5_tar) as tar:
         tar.extractall()
     os.remove(mg5_tar)
