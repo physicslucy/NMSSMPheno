@@ -28,7 +28,6 @@ def main(in_args=sys.argv[1:]):
                         "Must be of the form <source> <destination>. "
                         "Repeat for each file you want to copy.")
     parser.add_argument('--oDir', help='Output directory for HepMC/LHE files')
-    parser.add_argument("--exe", help="Name of executable", default="mc.exe")
     parser.add_argument("--args", nargs=argparse.REMAINDER,
                         help="")
     args = parser.parse_args(args=in_args)
