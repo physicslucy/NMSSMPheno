@@ -128,7 +128,6 @@ def main(in_args=sys.argv[1:]):
     if args.copyFromLocal:
         for (source, dest) in args.copyFromLocal:
             print source, dest
-            check_create_dir(dest)
             if dest.startswith('/hdfs'):
                 dest = dest.replace('/hdfs', '')
                 call(['hadoop', 'fs', '-copyFromLocal', '-f', source, dest])
