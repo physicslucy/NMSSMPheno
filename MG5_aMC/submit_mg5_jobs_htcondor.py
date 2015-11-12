@@ -141,9 +141,10 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:], mg5_dir=MG5_DIR):
     # copy to hdfs
     zip_dir = '/hdfs/user/%s/NMSSMPheno/zips/' % (os.environ['LOGNAME'])
     check_create_dir(zip_dir, args.v)
-    zip_path = os.path.join(zip_dir, '%s.tgz' % version)
-    call(['hadoop', 'fs', '-copyFromLocal', '-f',
-          '%s.tgz' % version, zip_dir.replace('/hdfs', '')])
+    zip_filename = '%s.tgz' % version
+    zip_path = os.path.join(zip_dir, zip_filename)
+    call(['hadoop', 'fs', '-copyFromLocal', '-f', zip_filename, zip_dir.replace('/hdfs', '')])
+    os.remove(zip_filename)
     copy_to_local[zip_path] = 'MG5_aMC.tgz'
 
     # Copy across input cards to hdfs to sandbox them
