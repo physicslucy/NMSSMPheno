@@ -1,0 +1,22 @@
+# template condor job description file for running Delphes on condor
+
+Executable = HTCondor/runDelphes.py
+Universe = vanilla
+Output = $(logdir)/$(logfile).$(cluster).$(process).out
+Error = $(logdir)/$(logfile).$(cluster).$(process).err
+Log = $(logdir)/$(logfile).$(cluster).$(process).log
+when_to_transfer_output = ON_EXIT_OR_EVICT
+
+request_cpus = 1
+request_memory = 100MB
+request_disk = 500MB
+
+accounting_group = group_physics.hep
+account_group_user = $ENV(LOGNAME)
+
+getenv = true
+transfer_input_files =
+
+arguments = $(opts)
+
+queue
