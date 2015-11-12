@@ -95,6 +95,9 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:], mg5_dir=MG5_DIR):
 
     # Do some checks
     # -------------------------------------------------------------------------
+    if not os.path.isdir(mg5_dir):
+        raise RuntimeError('MG5_DIR does not correspond to an actual directory')
+
     if args.jobIdRange[0] < 1:
         raise RuntimeError('The first jobIdRange argument must be >= 1.')
 
@@ -107,6 +110,8 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:], mg5_dir=MG5_DIR):
         raise RuntimeError('You did not specify an input card!')
     if not os.path.isfile(card):
         raise RuntimeError('Input card %s does not exist!' % card)
+    if os.path.dirname(card) != 'input_cards':
+        raise RuntimeError('Put your card in input_cards directory')
     args.card = card
     args.channel = get_value_from_card(args.card, 'output')
 
