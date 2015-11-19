@@ -28,6 +28,8 @@ class PythiaProgramOpts
 
     double energy() { return energy_; }
 
+    bool diMuFilter() { return diMuFilter_; }
+
     bool writeToHEPMC() { return writeToHEPMC_; }
 
     std::string filenameHEPMC() { return filenameHEPMC_; }
@@ -85,6 +87,7 @@ class PythiaProgramOpts
     double mass_;
     int seed_;
     double energy_;
+    bool diMuFilter_;
 
     bool writeToHEPMC_;
     std::string filenameHEPMC_;

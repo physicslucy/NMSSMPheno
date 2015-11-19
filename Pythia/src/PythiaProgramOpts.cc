@@ -16,6 +16,7 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
   mass_(8.),
   seed_(0),
   energy_(13),
+  diMuFilter_(false),
   writeToHEPMC_(false),
   filenameHEPMC_(""),
   writeToLHE_(false),
@@ -45,6 +46,8 @@ PythiaProgramOpts::PythiaProgramOpts(int argc, char* argv[]):
       "Set seed explicitly instead (e.g. file number).")
     ("energy", po::value<double>(&energy_)->default_value(energy_),
       "Center-of-mass energy (in TeV).")
+    ("diMuFilter", po::bool_switch(&diMuFilter_)->default_value(diMuFilter_),
+      "Enable di-muon filter, so events are guaranteed to have >=2 final state muons.")
     ("hepmc", po::value<std::string>(&filenameHEPMC_)->implicit_value(filenameHEPMC_),
       "Save output in HepMC format (includes hadronisation). " \
       "Can optionally take a filename for the HepMC file. "\
@@ -131,6 +134,8 @@ void PythiaProgramOpts::printProgramOptions() {
   cout << "Random seed: " << seed_ << endl;
   cout << "Mass of a1: " << mass_ << endl;
   cout << "CoM energy [TeV]: " << energy_ << endl;
+  if (diMuFilter_)
+    cout << "Using di-muon filter" << endl;
   cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 }
 

@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
   //---------------------------------------------------------------------------
   int progressFreq = 50;
 
-  for (int iEvent = 0; iEvent < opts.nEvents(); ++iEvent) {
+  for (int iEvent = 0; iEvent < opts.nEvents();) {
     // output progress info
     if (iEvent % progressFreq == 0) {
       cout << "iEvent: " << iEvent << " - " << getCurrentTime() << endl;
@@ -142,6 +142,24 @@ int main(int argc, char *argv[]) {
     if (!pythia.next()) {
       break;
     }
+
+    Event event = pythia.event;
+
+    // Cut on number of muons
+    if (opts.diMuFilter()) {
+      int nMuons = 0;
+      for (int i = 0; i < event.size(); ++i) {
+        // check if final state and a muon
+        if (event[i].idAbs() == 13 && event[i].status() > 0)
+          nMuons++;
+        if (nMuons == 2)
+          break;
+      }
+      if (nMuons < 2)
+        continue;
+    }
+
+    iEvent++;
 
     // Output to screen if wanted
     if (iEvent < 2 && opts.printEvent()) {
@@ -178,8 +196,6 @@ int main(int argc, char *argv[]) {
     if (!opts.writeToROOT()) continue;
 
     bool donePlots = false;
-
-    Event event = pythia.event;
 
     // find h decay products and look at separation
     for (int i = 0; i < event.size(); ++i) {
