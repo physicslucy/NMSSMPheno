@@ -135,7 +135,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     if args.oDir == "":
         args.oDir = generate_dir_soolin(args.channel, args.energy)
 
-    checkCreateDir(args.oDir, args.v)
+    check_create_dir(args.oDir)
 
     # Copy across input cards to hdfs to sandbox them
     # -------------------------------------------------------------------------
@@ -154,7 +154,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
     # Setup log directory
     # -------------------------------------------------------------------------
     log_dir = '%s/logs' % generate_subdir(args.channel, args.energy)
-    checkCreateDir(log_dir, args.v)
+    check_create_dir(log_dir)
 
     # Loop over required mass(es), generating DAG files for each
     # -------------------------------------------------------------------------
@@ -176,7 +176,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:]):
         mass_str = '%g' % mass if isinstance(mass, float) else str(mass)
         file_stem = '%s/ma%s_%s' % (generate_subdir(args.channel, args.energy),
                                     mass_str, strftime("%H%M%S"))
-        checkCreateDir(os.path.dirname(file_stem), args.v)
+        check_create_dir(os.path.dirname(file_stem))
 
         # Make DAG file
         # ---------------------------------------------------------------------
@@ -294,7 +294,7 @@ def write_dag_file(dag_filename, condor_filename, status_filename,
                     # transfer to hdfs after generating, to a subfolder
                     # depending on filetype
                     oDir_fmt = os.path.join(args.oDir, fmt)
-                    checkCreateDir(oDir_fmt)
+                    check_create_dir(oDir_fmt)
                     job_opts.extend(['--copyFromLocal', out_name, oDir_fmt])
 
             job_opts.append('--args')
@@ -308,7 +308,7 @@ def write_dag_file(dag_filename, condor_filename, status_filename,
         dag_file.write('NODE_STATUS_FILE %s 30\n' % status_filename)
 
 
-def checkCreateDir(directory, info=False):
+def check_create_dir(directory):
     """Check to see if directory exists, if not make it.
 
     Can optionally display message to user.
@@ -318,8 +318,7 @@ def checkCreateDir(directory, info=False):
             raise RuntimeError("Cannot create directory %s, already "
                                "exists as a file object" % directory)
         os.makedirs(directory)
-        if info:
-            print "Making dir %s" % directory
+        log.debug("Making dir %s" % directory)
 
 
 def generate_subdir(channel, energy=13):

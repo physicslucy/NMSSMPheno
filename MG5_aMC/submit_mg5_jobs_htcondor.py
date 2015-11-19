@@ -124,7 +124,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:], mg5_dir=MG5_DIR):
     if args.oDir == "":
         args.oDir = generate_dir_soolin(args.channel, args.energy)
 
-    check_create_dir(args.oDir, args.v)
+    check_create_dir(args.oDir)
 
     # Dicts to hold thing to be copied before/after the job runs
     copy_to_local = {}
@@ -140,7 +140,7 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:], mg5_dir=MG5_DIR):
     call(['tar', 'czf', '%s.tgz' % version, '-C', os.path.dirname(mg5_dir), version])
     # copy to hdfs
     zip_dir = '/hdfs/user/%s/NMSSMPheno/zips/' % (os.environ['LOGNAME'])
-    check_create_dir(zip_dir, args.v)
+    check_create_dir(zip_dir)
     zip_filename = '%s.tgz' % version
     zip_path = os.path.join(zip_dir, zip_filename)
     call(['hadoop', 'fs', '-copyFromLocal', '-f', zip_filename, zip_dir.replace('/hdfs', '')])
@@ -166,13 +166,13 @@ def submit_mc_jobs_htcondor(in_args=sys.argv[1:], mg5_dir=MG5_DIR):
     # Setup log directory
     # -------------------------------------------------------------------------
     log_dir = '%s/logs' % generate_subdir(args.channel, args.energy)
-    check_create_dir(log_dir, args.v)
+    check_create_dir(log_dir)
 
     # File stem common for all dag and status files
     # -------------------------------------------------------------------------
     file_stem = os.path.join(generate_subdir(args.channel, args.energy),
                              strftime("%H%M%S"))
-    check_create_dir(os.path.dirname(file_stem), args.v)
+    check_create_dir(os.path.dirname(file_stem))
 
     # Make DAG file
     # -------------------------------------------------------------------------
@@ -293,7 +293,7 @@ def write_dag_file(dag_filename, condor_filename, status_filename, log_dir,
         dag_file.write('NODE_STATUS_FILE %s 30\n' % status_filename)
 
 
-def check_create_dir(directory, info=False):
+def check_create_dir(directory):
     """Check to see if directory exists, if not make it.
 
     Can optionally display message to user.
@@ -303,8 +303,7 @@ def check_create_dir(directory, info=False):
             raise RuntimeError("Cannot create directory %s, already "
                                "exists as a file object" % directory)
         os.makedirs(directory)
-        if info:
-            print "Making dir %s" % directory
+        log.debug("Making dir %s" % directory)
 
 
 def generate_subdir(channel, energy=13):
