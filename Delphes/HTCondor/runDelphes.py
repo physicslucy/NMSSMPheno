@@ -130,6 +130,8 @@ def copy_to_local(source, dest):
 
 def copy_from_local(source, dest):
     """Copy file from local area to e.g. /hdfs, /sorage, etc"""
+    if not os.path.isdir(os.path.dirname(dest)):
+        os.makedirs(os.path.dirname(dest))
     if dest.startswith('/hdfs'):
         dest = dest.replace('/hdfs', '')
         call(['hadoop', 'fs', '-copyFromLocal', '-f', source, dest])

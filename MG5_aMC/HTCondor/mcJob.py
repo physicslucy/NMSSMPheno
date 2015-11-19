@@ -90,6 +90,7 @@ def main(in_args=sys.argv[1:]):
     # -------------------------------------------------------------------------
     if args.copyFromLocal:
         for (source, dest) in args.copyFromLocal:
+            check_create_dir(os.path.dirname(dest))
             print source, dest
             if dest.startswith('/hdfs'):
                 dest = dest.replace('/hdfs', '')
