@@ -1,0 +1,22 @@
+{
+    "#comment": [
+        "List each channel you want to run over. ",
+        "For each, you must specify the number of files to run over (-1 for all)",
+        "and list the directory(ies) containing files to run over.",
+        "You can comment out chcannels by using #, !, or _ at the start"
+    ],
+
+    "ggh125_2a_4tau": {
+        "num": 1,
+        "dirs": [
+            "/hdfs/user/ra12451/NMSSMPheno/Pythia8/13TeV/ggh125_2a_4tau/18_Nov_15/delphes/delphes_card_CMS"
+        ]
+    },
+
+    "pp13_bb": {
+        "num": 1,
+        "dirs": [
+            "/hdfs/user/ra12451/NMSSMPheno/MG5_aMC/13TeV/pp13_bb/18_Nov_15/delphes/delphes_card_CMS"
+        ]
+    }
+}
