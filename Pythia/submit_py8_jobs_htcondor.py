@@ -287,9 +287,9 @@ def write_dag_file(dag_filename, condor_filename, status_filename,
                     # if the user has specified the name
                     out_name = "%s_seed%d.%s" % (os.path.splitext(out_name)[0],
                                                  job_ind, fmt)
+                    set_option_in_args(exe_args, flag, out_name)
                     if '--zip' in exe_args:
                         out_name += ".gz"
-                    set_option_in_args(exe_args, flag, out_name)
 
                     # transfer to hdfs after generating, to a subfolder
                     # depending on filetype

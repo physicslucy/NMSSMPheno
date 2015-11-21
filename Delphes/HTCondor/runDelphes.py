@@ -64,10 +64,8 @@ def runDelphes(in_args=sys.argv[1:]):
     # -------------------------------------------------------------------------
     # assumes tarfile is called delphes.tgz!
     delphes_tar = 'delphes.tgz'
-    with tarfile.open(delphes_tar) as tar:
-        tar.extractall()
+    call(['tar', 'xzf', delphes_tar])
     os.remove(delphes_tar)
-
     os.chdir('delphes')
 
     # Run Delphes over files
@@ -101,7 +99,6 @@ def runDelphes(in_args=sys.argv[1:]):
                 raise RuntimeError('Cannot determine which exe to use for %s' % in_local)
 
         exe = args.exe if args.exe else determine_exe(os.path.splitext(in_local)[1])
-
         call([exe, os.path.join('..', args.card), out_local, in_local])
 
         copy_from_local(out_local, output_file)
