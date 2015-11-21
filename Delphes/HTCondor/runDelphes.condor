@@ -9,7 +9,7 @@ when_to_transfer_output = ON_EXIT_OR_EVICT
 
 request_cpus = 1
 request_memory = 100MB
-request_disk = 1000MB
+request_disk = 10GB
 
 accounting_group = group_physics.hep
 account_group_user = $ENV(LOGNAME)
