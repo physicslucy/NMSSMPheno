@@ -35,6 +35,9 @@ ROOT.TH1.SetDefaultSumw2(True)
 
 
 # This is a function (aka method). Don't forget the colon!
+# Python notices indentations! The contents of the function MUST be indented
+# (relative to the 'def') otherwise python will think the code is 'outside'
+# the running of the method.
 def make_easy_plot(filename, fmt='pdf'):
     """
     This is a docstring. It is meant to describe the method, its arguments,
@@ -297,7 +300,7 @@ if __name__ == "__main__":
     # The second argument will be the ROOT filename.
     # len() counts the size of iterable things like lists
     if len(sys.argv) != 2:
-        raise RuntimeError("Need to speicfy 1 filename to process")
+        raise RuntimeError("Need to specify 1 filename to process")
 
     make_easy_plot(sys.argv[1])  # [1] means 'get the 2nd element', since the first is at [0]
     make_easy_2d_plot(filename=sys.argv[1], fmt='png')  # We can use the argument name when calling it! Make things SO much clearer
