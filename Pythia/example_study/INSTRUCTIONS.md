@@ -26,6 +26,6 @@ cd example_study
 ./basicPlotter.py ggh125_2a_4tau_ma1_8_13TeV_n1000_seed0.root
 ```
 
-For more info about ROOT classes, see the reference guide: (https://root.cern.ch/doc/master/index.html)[https://root.cern.ch/doc/master/index.html]
+For more info about ROOT classes, see the reference guide: https://root.cern.ch/doc/master/index.html
 
 Happy plotting!
