@@ -166,7 +166,7 @@ CT10nlo PDF set, member #0, version 4; LHAPDF ID = 11000
 ```
 mkdir MG5_aMC
 cd MG5_aMC
-wget https://launchpad.net/mg5amcnlo/2.0/2.3.0/+download/MG5_aMC_v2.3.2.2.tar.gz -O- | tar xvz
+wget https://launchpad.net/mg5amcnlo/2.0/2.3.0/+download/MG5_aMC_v2.3.3.tar.gz -O- | tar xvz
 ```
 Extract, and test it runs OK interactively.
 
